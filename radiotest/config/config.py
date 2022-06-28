@@ -1,4 +1,9 @@
 
+# Config
+
+Config_obj = None
+
+
 # Loader
 
 Loader_obj = None

@@ -55,15 +55,9 @@ class Loader:
         self.info_cache[name] = info
         return info
 
-    def add_instrument(self, name, i_type, driver,  class_name, interface="vxi", hostname=None):
+    def add_instrument(self, name, instrument):
         """ Add an instrument to the instrument table"""
-        new_inst = dict()
-        new_inst["i_type"] = i_type
-        new_inst["driver"] = driver
-        new_inst["class_name"] = class_name
-        new_inst["interface"] = interface
-        new_inst["hostname"] = hostname
-        self.instrument_table[name] = new_inst
+        self.instrument_table[name] = instrument
 
     def get_driver_instance(self, info):
         """Return the driver instance for the info specified """
