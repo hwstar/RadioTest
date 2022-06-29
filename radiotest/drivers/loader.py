@@ -15,7 +15,8 @@ class Loader:
 
     def _ping(self, host):
         """ Private ping function """
-        response = subprocess.call(["ping", "-c1", "-W1", host])
+        response = subprocess.call(["ping", "-c1", "-W1", host],
+                                   stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
         return True if response == 0 else False
 
     def load(self, name):
