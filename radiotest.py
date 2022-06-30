@@ -6,7 +6,7 @@ import tkinter.ttk as ttk
 import radiotest.config.config as config
 import radiotest.config.configdata as configdata
 import radiotest.drivers.loader as loader
-import radiotest.gui.classes as gui
+import radiotest.gui.top as gui
 
 # Loader initialization
 
