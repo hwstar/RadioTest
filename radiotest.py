@@ -7,6 +7,8 @@ import radiotest.config.config as config
 import radiotest.config.configdata as configdata
 import radiotest.drivers.loader as loader
 import radiotest.gui.top as gui
+import radiotest.tests.harmspur as harmspur_test
+import radiotest.tests.imd as imd_test
 
 # Loader initialization
 
@@ -21,9 +23,16 @@ for instrument in config.Config_obj.get_instrument_list():
 
 # GUI initialization
 
-Root = tk.Tk()
-Root.title("RadioTest")
-config.App_obj = gui.FullScreenApp(Root)
+config.Root_obj = tk.Tk()
+config.Root_obj.title("RadioTest")
+config.App_obj = gui.FullScreenApp(config.Root_obj)
 config.App_obj.pack(side="top", fill="both", expand=True)
 
-Root.mainloop()
+# Test initialization
+
+config.HarmSpur_test_obj = harmspur_test.TestHarmSpur()
+config.IMD_test_obj = imd_test.TestImd()
+
+# Forever loop
+
+config.Root_obj.mainloop()

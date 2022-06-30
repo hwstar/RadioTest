@@ -6,6 +6,9 @@ Harm_spurs_defaults = {"fundamental": 7.2, "ref_offset": 40, "highest_harmonic":
 # IMD Defaults
 IMD_defaults = {"ref_offset": 40, "tone_level": -4, "display_line": -10,"f1": 7.2, "f2":7.2011, "span":10 }
 
+# *** Global objects ***
+# These are initialized in radiotest.py
+
 # Config
 
 Config_obj = None
@@ -16,9 +19,12 @@ Config_obj = None
 Loader_obj = None
 
 # GUI
-Root_obj = None
-App_obj = None
+Root_obj = None  # Root Tk obj used by mainloop in radiotest.py
+App_obj = None  # Use this to gain access to the GUI methods
 
+
+# Tests
+HarmSpur_test_obj = None
 
 
 

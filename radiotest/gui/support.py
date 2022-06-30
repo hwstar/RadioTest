@@ -53,6 +53,7 @@ class Validate():
 
 
 class InfoFields():
+
     def instrument_select(self, parent, row, instr_filter, instr_text, rb_int_var, rb_sel_clicked_callback):
         """ Helper to select an instrument
 
@@ -118,7 +119,7 @@ class InfoFields():
 
     def instr_radiobutton_handler(self, parent, instr_info, test_button_enable_callback):
         """
-        Handler for radio button selection.
+        Handler for instrument radio button selection.
 
         Parameters:
             parent(obj) : parent frame
@@ -132,6 +133,7 @@ class InfoFields():
             try:
                 loader_info = config.Loader_obj.load(instr_info["instr_selected"])
                 drv_inst = config.Loader_obj.get_driver_instance(loader_info)
+                instr_info["driver_inst"] = drv_inst
                 instr_info["make"].config(text=drv_inst.make)
                 instr_info["model"].config(text=drv_inst.model)
                 instr_info["serial"].config(text=drv_inst.sn)
@@ -145,8 +147,8 @@ class InfoFields():
         else:
             self.reset_instrument_select(instr_info, test_button_enable_callback)
 
-
     def reset_instrument_select(self, instr_info, test_button_enable_callback):
+        """ Called when it is necessary to reset the selected instruments in a tab"""
         test_button_enable_callback(False)
         instr_info["make"].config(text="N/A")
         instr_info["model"].config(text="N/A")

@@ -13,7 +13,7 @@ class Tab_IMD(ttk.Frame):
     def __init__(self, parent, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
         self.parent = parent
-
+        self.test_function = None
         self.test_button_enable_state = 0
 
         # Info field functions
@@ -90,6 +90,43 @@ class Tab_IMD(ttk.Frame):
         self.ifl.label_entry(self, row, 0, "Span:", 8, self.sa_span_doublevar,
                            self.pos_float_reg, "kHz")
 
+
+        # Test separator
+        row += 1
+        self.test_sep = ttk.Separator(self, orient=tk.HORIZONTAL)
+        self.test_sep.grid(row=row, column=0, columnspan=10, sticky='ew')
+
+        # Test button
+        row += 1
+        self.test_b = tk.Button(self, text="Run Test", command=self.run_test, state=tk.DISABLED)
+        self.test_b.grid(row=row, column=0)
+
+    def register_test_function(self, test_function):
+        self.test_function = test_function
+
+    def run_test(self):
+        """ This gets called when the user presses the run test button"""
+        if self.test_function is None:
+            return
+        # Format a data structure containing the test setup to pass to the tests run function
+        test_setup = dict()
+        sa_dict = dict()
+        awg_dict = dict()
+        sa_dict["driver_inst"] = self.sa_instr_info["driver_inst"]
+        awg_dict["driver_inst"] = self.awg_instr_info["driver_inst"]
+        instruments = {"sa": sa_dict, "awg": awg_dict}
+        test_setup["instruments"] = instruments
+        parameters = dict()
+        parameters["ref_offset"] = self.sa_ref_offset_intvar.get()
+        parameters["tone_level"] = self.awg_tone_level_intvar.get()
+        parameters["display_line"] = self.sa_display_line_intvar.get()
+        parameters["f1"] = self.awg_f1_doublevar.get()
+        parameters["f2"] = self.awg_f2_doublevar.get()
+        parameters["span"] = self.sa_span_doublevar.get()
+        test_setup["parameters"] = parameters
+        test_setup["gui_inst"] = self
+        self.test_function(test_setup)
+
     def sa_clicked_callback(self):
         """ Called when the spectrum analyzer radiobutton is clicked
         Calls the radiobutton handler with the required arguments"""
@@ -104,24 +141,21 @@ class Tab_IMD(ttk.Frame):
     def update_test_button_enable(self, or_bits, and_bits):
         """ Called to enable or disable the test button"""
         self.test_button_enable_state |= or_bits
-        self.test_button_enable_state &= and_bits
-        if self.test_button_enable_state == 3:
-            pass  # TODO: Enable test button here
-        else:
-            pass  # TODO: Disable test button here
-
+        self.test_button_enable_state &= ~and_bits
+        ena_dis = tk.NORMAL if self.test_button_enable_state  == 3 else tk.DISABLED
+        self.test_b["state"] = ena_dis
 
     def change_sa_selected_state(self, state):
         """ Called to change the spectrum analyzer selected state"""
         or_bits = 0x1 if state is True else 0
-        and_bits = ~0x1 if state is False else 0
+        and_bits = 0x1 if state is False else 0
 
         self.update_test_button_enable(or_bits, and_bits)
 
     def change_awg_selected_state(self, state):
         """" Called to change the arbitrary waveform generator selected state"""
         or_bits = 0x2 if state is True else 0
-        and_bits = ~0x2 if state is False else 0
+        and_bits = 0x2 if state is False else 0
 
         self.update_test_button_enable(or_bits, and_bits)
 

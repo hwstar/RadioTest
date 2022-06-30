@@ -11,6 +11,7 @@ class Tab_Harm_Spur(ttk.Frame):
     def __init__(self, parent, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
         self.parent = parent
+        self.test_function = None
 
         # Info field functions
         self.ifl = support.InfoFields()
@@ -66,16 +67,50 @@ class Tab_Harm_Spur(ttk.Frame):
         self.ifl.label_entry(self, row, 0, "Highest_Harmonic:", 4, self.sa_highest_harmonic_intvar,
                            self.highest_harmonic_reg, None)
 
+        # Test separator
+        row += 1
+        self.test_sep = ttk.Separator(self, orient=tk.HORIZONTAL)
+        self.test_sep.grid(row=row, column=0, columnspan=10, sticky='ew')
+
+        # Test button
+        row += 1
+        self.test_b = tk.Button(self, text="Run Test", command=self.run_test, state=tk.DISABLED )
+        self.test_b.grid(row=row, column=0)
+
+    def register_test_function(self, test_function):
+        self.test_function = test_function
+
+    def run_test(self):
+        """ This gets called when the user presses the run test button"""
+        if self.test_function is None:
+            return
+        # Format a data structure containing the test setup to pass to the tests run function
+        test_setup = dict()
+        sa_dict = dict()
+        sa_dict["driver_inst"] = self.sa_instr_info["driver_inst"]
+        instruments = {"sa": sa_dict}
+        test_setup["instruments"] = instruments
+        parameters = dict()
+        parameters["ref_offset"] = self.sa_ref_offset_intvar.get()
+        parameters["display_line"] = self.sa_display_line_intvar.get()
+        parameters["fundamental"] = self.sa_fundamental_doublevar.get()
+        parameters["highest_harmonic"] = self.sa_highest_harmonic_intvar.get()
+        test_setup["parameters"] = parameters
+        test_setup["gui_inst"] = self
+        self.test_function(test_setup)
+
+
+
     def sa_clicked_callback(self):
         """ Called when the spectrum analyzer radiobutton is clicked
         Calls the radiobutton handler with the required arguments"""
         self.ifl.instr_radiobutton_handler(self, self.sa_instr_info, self.test_button_enable)
-        pass
 
 
     def test_button_enable(self, state):
         """ Called to enable or disable the test button"""
-        pass
+        ena_dis = tk.NORMAL if state is True else tk.DISABLED
+        self.test_b["state"] = ena_dis
 
 
     def reset(self):
