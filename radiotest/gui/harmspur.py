@@ -99,6 +99,13 @@ class Tab_Harm_Spur(ttk.Frame):
         test_setup["gui_inst"] = self
         self.test_function(test_setup)
 
+    def show_error(self, title=None, message=None):
+        """ Display an error popup. This gets called by the test code"""
+        if title is None or message is None:
+            return
+        tk.messagebox.showerror(title=title, message=message)
+        return
+
 
 
     def sa_clicked_callback(self):

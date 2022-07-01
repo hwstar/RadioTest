@@ -5,7 +5,8 @@ class Dsa815(Instrument):
     """This class controls a Rigol DSA815 spectrum analyzer"""
 
     def rst(self):
-        self._write("*RST")
+        self.reset()
+        self.set_display_line_state("OFF")
 
     def __init__(self, resourcehost):
         Instrument.__init__(self, resourcehost)
@@ -113,6 +114,10 @@ class Dsa815(Instrument):
     def set_display_line(self, level=0):
         """ Set the display line"""
         self.write(":DISP:WIN:TRAC:Y:DLIN {level}".format(level=level))
+
+    def set_display_line_state(self, state):
+        dls = "ON" if state is True else "OFF"
+        self.write("DISP:WIN:TRAC:Y:DLIN:STAT {}".format(dls))
 
     def set_preamp_off(self):
         """Disable the built in preamp"""
