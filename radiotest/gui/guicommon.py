@@ -12,7 +12,21 @@ class GuiCommon(ttk.Frame):
 
     def validate_pos_float(self, action, index, value_if_allowed,
                            prior_value, text, validation_type, trigger_type, widget_name):
-        """ Validate a positive float field"""
+        """ Validate a positive float field
+        Refer to: https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/entry-validation.html
+        Parameters:
+            action(int):  Action code
+            index(int): Insert or delete index
+            value_if_allowed(str): Edited string value to validate
+            prior_value(str): String value before the edit
+            text(str): The text being insered or deleted
+            validation_type(str): The current value of the widget's validate option.
+            trigger_type(str): the type of validation that triggered the callback
+            widget_name(str): the tk name of the widget
+        Returns:
+            True if the entry is to be accepted, false if it is to be rejected
+        """
+
         if (action == '1'):
             if text in '0123456789.':
                 try:
@@ -27,7 +41,20 @@ class GuiCommon(ttk.Frame):
 
     def validate_int(self, action, index, value_if_allowed,
                      prior_value, text, validation_type, trigger_type, widget_name):
-        """ Validate an integer field"""
+        """ Validate an integer field
+        Refer to: https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/entry-validation.html
+        Parameters:
+            action(int):  Action code
+            index(int): Insert or delete index
+            value_if_allowed(str): Edited string value to validate
+            prior_value(str): String value before the edit
+            text(str): The text being insered or deleted
+            validation_type(str): The current value of the widget's validate option.
+            trigger_type(str): the type of validation that triggered the callback
+            widget_name(str): the tk name of the widget
+        Returns:
+            True if the entry is to be accepted, false if it is to be rejected
+        """
         if action == "1":
             if text in "0123456789-":
                 try:
@@ -44,7 +71,21 @@ class GuiCommon(ttk.Frame):
 
     def validate_highest_harmonic(self, action, index, value_if_allowed,
                                   prior_value, text, validation_type, trigger_type, widget_name):
-        """ Validate an integer field"""
+        """ Validate an integer field
+         Refer to: https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/entry-validation.html
+        Parameters:
+            action(int):  Action code
+            index(int): Insert or delete index
+            value_if_allowed(str): Edited string value to validate
+            prior_value(str): String value before the edit
+            text(str): The text being insered or deleted
+            validation_type(str): The current value of the widget's validate option.
+            trigger_type(str): the type of validation that triggered the callback
+            widget_name(str): the tk name of the widget
+        Returns:
+            True if the entry is to be accepted, false if it is to be rejected
+
+        """
         if action == "1":
             if text in "123456789":
                 return True
@@ -126,6 +167,8 @@ class GuiCommon(ttk.Frame):
             test_button_enable_callback (function): a callback called when the test enable button is to be enabled or disabled.
             show_error_callback (function): a callback function used when a driver fails to load
             busy_callback (function) : called with an argument of True when the driver is loading, and False when loading is complete
+        Returns:
+            Nothing
 
         """
         instr_info["instr_selected"] = instr_info["instr_names"][instr_info["int_var"].get()]
@@ -155,7 +198,14 @@ class GuiCommon(ttk.Frame):
             self.reset_instrument_select(instr_info, test_button_enable_callback, rb_int_var)
 
     def reset_instrument_select(self, instr_info, test_button_enable_callback, rb_int_var):
-        """ Called when it is necessary to reset the selected instruments in a tab"""
+        """ Called when it is necessary to reset the selected instruments in a tab
+        Parameters:
+            instr_info(dict):   A dictionary containing the make, model, serial number and firmware information
+            test_button_enable_callback(function): A function to call to select the none radio button
+            rb_int_var(IntVar): The control variable for the radio button set
+        Returns:
+            Nothing
+        """
         test_button_enable_callback(False) # Disable the test button
         rb_int_var.set(0) # Select the None button
         # Set the description fields to N/A
@@ -165,7 +215,16 @@ class GuiCommon(ttk.Frame):
         instr_info["fw"].config(text="N/A")
 
     def label_entry(self, row, column_start, label, entry_width, entry_text_var, entry_val_reg, unit=None):
-        """Helper to create a Label/Entry and optional unit Label column depending if unit is specified"""
+        """Helper to create a Label/Entry and optional unit Label column depending if unit is specified
+        Parameters:
+            row(int): The row number for the label entry
+            column_start(int): The column number entry where the label entry will start (uses 2 or 3 columns)
+            entry_width(int): Entry width in characters
+            entry_text_var(StrVar): Control variable for the entry
+            entry_val_reg: Validation registration object
+        Returns:
+              Nothing
+        """
         label_item = ttk.Label(self, text=label)
         label_item.grid(row=row, column=column_start)
         entry_item = ttk.Entry(self, width=entry_width, textvariable=entry_text_var,
@@ -176,3 +235,14 @@ class GuiCommon(ttk.Frame):
         if unit is not None:
             unit_item = ttk.Label(self, text=unit)
             unit_item.grid(row=row, column=column_start+2)
+
+    def format_float_as_string(self, value, precision):
+        """ Format a floating point number as a string with the supplied precision
+        Parameters:
+            value(float):   The value to convert to a string
+            precision(int): The number of digits to the right of the decimal point to include
+        Returns:
+            A string representing the number
+        """
+        f_string = "{value:." + str(precision) + "f}"
+        return f_string.format(value)
