@@ -3,8 +3,13 @@ import tkinter.ttk as ttk
 import radiotest.config.config as config
 import radiotest.drivers.loader as loader
 
-#   validation of entered data
-class Validate():
+
+class GuiCommon(ttk.Frame):
+
+    def __init__(self, parent, **kwargs):
+        ttk.Frame.__init__(self, parent, **kwargs)
+
+
     def validate_pos_float(self, action, index, value_if_allowed,
                            prior_value, text, validation_type, trigger_type, widget_name):
         """ Validate a positive float field"""
@@ -19,7 +24,6 @@ class Validate():
                 return False
         else:
             return True
-
 
     def validate_int(self, action, index, value_if_allowed,
                      prior_value, text, validation_type, trigger_type, widget_name):
@@ -49,19 +53,13 @@ class Validate():
         else:
             return True
 
-#Functions to support the entry of test parameters
-
-
-class InfoFields():
-
-    def instrument_select(self, parent, row, instr_filter, instr_text, rb_int_var, rb_sel_clicked_callback):
+    def instrument_select(self, row, instr_filter, instr_text, rb_int_var, rb_sel_clicked_callback):
         """ Helper to select an instrument
 
         Parameters:
-            parent(Frame obj): Parent frame
             row(int): Starting row to print the instrument radio buttons and instrument information (2 rows will be used)
             instr_filter(str): Instrument name string
-            instr_text(int): Name of the label field used to identify the radiobutton set
+            instr_text(str): Name of the label field used to identify the radiobutton set
             rb_int_var(IntVar obj): the Intvar object used by the radiobutton set
             rb_sel_clicked_callback(function): Function called when a radiobutton is clicked
 
@@ -76,7 +74,7 @@ class InfoFields():
         instr_info["int_var"] = rb_int_var
 
         # Place the instrument text label
-        label_instr = ttk.Label(parent, width=20, anchor=tk.E, text=instr_text)
+        label_instr = ttk.Label(self, width=20, anchor=tk.E, text=instr_text)
         label_instr.grid(row=row, column=0)
 
         # Get available instruments and create radio buttons for them
@@ -84,7 +82,7 @@ class InfoFields():
         instr_names = instr_names + (config.Config_obj.get_instrument_names_of_type(instr_filter))
         radio_buttons = dict()
         for i, instr_name in enumerate(instr_names):
-            radio_buttons[instr_name] = tk.Radiobutton(parent, text=instr_name, variable=rb_int_var, value=i,
+            radio_buttons[instr_name] = tk.Radiobutton(self, text=instr_name, variable=rb_int_var, value=i,
                                                               command=rb_sel_clicked_callback, highlightthickness=0)
             radio_buttons[instr_name].grid(row=row, column=i + 1)
 
@@ -95,24 +93,24 @@ class InfoFields():
 
         # Create the make, model, serial number, and firmware fields
         row += 1
-        make_l = ttk.Label(parent, width=10, anchor=tk.E, text="Make:")
+        make_l = ttk.Label(self, width=10, anchor=tk.E, text="Make: ")
         make_l.grid(row=row, column=0)
-        instr_info["make"] = ttk.Label(parent, width=30, anchor=tk.W, text=make)
+        instr_info["make"] = ttk.Label(self, width=20, anchor=tk.W, text=make)
         instr_info["make"].grid(row=row, column=1)
 
-        model_l = ttk.Label(parent, width=10, anchor=tk.E, text="Model:")
+        model_l = ttk.Label(self, width=10, anchor=tk.E, text="Model: ")
         model_l.grid(row=row, column=2)
-        instr_info["model"] = ttk.Label(parent, width=30, anchor=tk.W, text=model)
+        instr_info["model"] = ttk.Label(self, width=20, anchor=tk.W, text=model)
         instr_info["model"].grid(row=row, column=3)
 
-        sn_l = ttk.Label(parent, width=10, anchor=tk.E, text="Serial:")
+        sn_l = ttk.Label(self, width=10, anchor=tk.E, text="Serial: ")
         sn_l.grid(row=row, column=4)
-        instr_info["serial"] = ttk.Label(parent, width=30, anchor=tk.W, text=serial)
+        instr_info["serial"] = ttk.Label(self, width=20, anchor=tk.W, text=serial)
         instr_info["serial"].grid(row=row, column=5)
 
-        fw_l = ttk.Label(parent, width=10, anchor=tk.E, text="Firmware:")
+        fw_l = ttk.Label(self, width=10, anchor=tk.E, text="Firmware: ")
         fw_l.grid(row=row, column=6)
-        instr_info["fw"] = ttk.Label(parent, width=30, anchor=tk.W, text=fw)
+        instr_info["fw"] = ttk.Label(self, width=20, anchor=tk.W, text=fw)
         instr_info["fw"].grid(row=row, column=7)
 
         return instr_info
@@ -166,18 +164,15 @@ class InfoFields():
         instr_info["serial"].config(text="N/A")
         instr_info["fw"].config(text="N/A")
 
-    def label_entry(self, parent, row, column_start, label, entry_width, entry_text_var, entry_val_reg, unit=None):
+    def label_entry(self, row, column_start, label, entry_width, entry_text_var, entry_val_reg, unit=None):
         """Helper to create a Label/Entry and optional unit Label column depending if unit is specified"""
-        label_item = ttk.Label(parent, text=label)
+        label_item = ttk.Label(self, text=label)
         label_item.grid(row=row, column=column_start)
-        entry_item = ttk.Entry(parent, width=entry_width, textvariable=entry_text_var,
+        entry_item = ttk.Entry(self, width=entry_width, textvariable=entry_text_var,
                                            validate="key",
                                            validatecommand=(
                                                entry_val_reg, '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W'))
         entry_item.grid(row=row, column=column_start+1)
         if unit is not None:
-            unit_item = ttk.Label(parent, text=unit)
+            unit_item = ttk.Label(self, text=unit)
             unit_item.grid(row=row, column=column_start+2)
-
-
-

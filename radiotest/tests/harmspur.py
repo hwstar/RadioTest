@@ -42,7 +42,8 @@ class TestHarmSpur(TestSupport):
         fund_power = self.sa_fund_power(measurement_data["spurs_500k"], fund_and_harm_table[0])
         if fund_power is None:
             self.gui.show_error(title="No fundamental Peak",
-                               message="Did not see the fundamental frequency in the peak data. Check your setup")
+                               message="Did not see the fundamental frequency in the peak data.\
+                                Check your setup, and your fundamental frequency parameter")
             return
 
         # *** Test for close-in spurs @+/-1MHz  which might not have been filtered out by the TRX bandpass filter ***

@@ -3,28 +3,25 @@ import tkinter.ttk as ttk
 from tkinter.messagebox import showerror
 import radiotest.config.config as config
 import radiotest.config.configdata as configdata
-import radiotest.gui.support as support
+import radiotest.gui.guicommon as gc
 
 
-class Tab_TRX_LO(ttk.Frame):
+class Tab_TRX_LO(gc.GuiCommon):
     def __init__(self, parent, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
         self.parent = parent
         self.test_function = None
 
-        # Info field functions
-        self.ifl = support.InfoFields()
-
         # Registration of validation functions
-        self.v = support.Validate()
-        self.int_reg = self.register(self.v.validate_int)
-        self.pos_float_reg = self.register(self.v.validate_pos_float)
+
+        self.int_reg = self.register(self.validate_int)
+        self.pos_float_reg = self.register(self.validate_pos_float)
 
         row = 0
 
         # ARBITRARY WAVEFORM GENERATOR
         self.awg_int_var = tk.IntVar(self, row, "trxlo_rb_sel_awg_var")
-        self.awg_instr_info = self.ifl.instrument_select(self,
+        self.awg_instr_info = self.instrument_select(
                                                          row,
                                                          configdata.CD_FILT_AWG,
                                                          "Arbitrary Waveform Generator:",
@@ -43,7 +40,7 @@ class Tab_TRX_LO(ttk.Frame):
         self.awg_if_carr_freq_floatvar = tk.DoubleVar(self, config.TRXLO_defaults["if_carr_freq"],
                                                       "trxlo_if_carr_freq")
         row += 1
-        self.ifl.label_entry(self,
+        self.label_entry(
                              row,
                              0,
                              "IF/Carrier Frequency:",
@@ -57,7 +54,7 @@ class Tab_TRX_LO(ttk.Frame):
                                              config.TRXLO_defaults["lo_level"],
                                              "trxlo_lo_level_intvar")
         row += 1
-        self.ifl.label_entry(self,
+        self.label_entry(
                              row,
                              0,
                              "LO Level:",
@@ -71,7 +68,7 @@ class Tab_TRX_LO(ttk.Frame):
                                                   config.TRXLO_defaults["operating_freq"],
                                                   "operating_freq")
         row += 1
-        self.ifl.label_entry(self,
+        self.label_entry(
                              row,
                              0,
                              "Operating Freq:",
@@ -119,7 +116,7 @@ class Tab_TRX_LO(ttk.Frame):
         self.test_b.grid(row=row, column=0)
 
     def register_test_function(self, test_function):
-        """ Register test functoin: Called by the test constructor"""
+        """ Register test function: Called by the test constructor"""
         self.test_function = test_function
 
     def run_test(self):
@@ -160,9 +157,9 @@ class Tab_TRX_LO(ttk.Frame):
     def awg_clicked_callback(self):
         """ Called when the arbitrary waveform radiobutton is clicked
         Calls the radiobutton handler with the required arguments"""
-        self.ifl.instr_radiobutton_handler(self.awg_instr_info, self.test_button_enable,
+        self.instr_radiobutton_handler(self.awg_instr_info, self.test_button_enable,
                                            self.show_error, self.awg_int_var)
 
     def reset(self):
         """ Reset the tab to defaults"""
-        self.ifl.reset_instrument_select(self.awg_instr_info, self.test_button_enable, self.awg_int_var)
+        self.reset_instrument_select(self.awg_instr_info, self.test_button_enable, self.awg_int_var)

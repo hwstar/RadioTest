@@ -27,7 +27,7 @@ for instrument in config.Config_obj.get_instrument_list():
 config.Root_obj = tk.Tk()
 config.Root_obj.title("RadioTest")
 config.App_obj = gui.FullScreenApp(config.Root_obj)
-config.App_obj.pack(side="top", fill="both", expand=True)
+config.App_obj.grid()
 
 # Test initialization
 

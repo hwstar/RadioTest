@@ -3,33 +3,28 @@ import tkinter.ttk as ttk
 from tkinter.messagebox import showerror
 import radiotest.config.config as config
 import radiotest.config.configdata as configdata
-import radiotest.drivers.loader as loader
-import radiotest.gui.support as support
+import radiotest.gui.guicommon as gc
 
 
 
 
-class Tab_IMD(ttk.Frame):
+class Tab_IMD(gc.GuiCommon):
     def __init__(self, parent, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
         self.parent = parent
         self.test_function = None
         self.test_button_enable_state = 0
 
-        # Info field functions
-        self.ifl = support.InfoFields()
-
         # Registration of validation functions
-        self.v = support.Validate()
-        self.int_reg = self.register(self.v.validate_int)
-        self.highest_harmonic_reg = self.register(self.v.validate_highest_harmonic)
-        self.pos_float_reg = self.register(self.v.validate_pos_float)
+        self.int_reg = self.register(self.validate_int)
+        self.highest_harmonic_reg = self.register(self.validate_highest_harmonic)
+        self.pos_float_reg = self.register(self.validate_pos_float)
 
         row = 0
 
         # SPECTRUM ANALYZER
         self.sa_int_var = tk.IntVar(self, row, "imd_rb_sel_sa_var")
-        self.sa_instr_info = self.ifl.instrument_select(self,
+        self.sa_instr_info = self.instrument_select(
                                                         row,
                                                         configdata.CD_FILT_SA,
                                                         "Spectrum Analyzer:",
@@ -40,7 +35,7 @@ class Tab_IMD(ttk.Frame):
         # ARBITRARY WAVEFORM GENERATOR
         row += 2
         self.awg_int_var = tk.IntVar(self, row, "imd_rb_sel_awg_var")
-        self.awg_instr_info = self.ifl.instrument_select(self,
+        self.awg_instr_info = self.instrument_select(
                                                         row,
                                                         configdata.CD_FILT_AWG,
                                                         "Arbitrary Waveform Generator:",
@@ -59,37 +54,37 @@ class Tab_IMD(ttk.Frame):
         self.sa_ref_offset_intvar = tk.IntVar(self, config.IMD_defaults["ref_offset"],
                                               "sa_ref_offset_intvar")
         row += 1
-        self.ifl.label_entry(self, row, 0, "Ref Offset:", 4, self.sa_ref_offset_intvar, self.int_reg, "dBm")
+        self.label_entry(row, 0, "Ref Offset:", 4, self.sa_ref_offset_intvar, self.int_reg, "dBm")
 
         # Tone Level
 
         self.awg_tone_level_intvar = tk.IntVar(self, config.IMD_defaults["tone_level"],
                                               "awg_tone_level_intvat")
         row += 1
-        self.ifl.label_entry(self, row, 0, "Tone Level:", 4, self.awg_tone_level_intvar, self.int_reg, "dBm")
+        self.label_entry(row, 0, "Tone Level:", 4, self.awg_tone_level_intvar, self.int_reg, "dBm")
 
 
         # Display Line
         self.sa_display_line_intvar = tk.IntVar(self, config.IMD_defaults["display_line"],
                                                 "sa_display_line_intvar")
         row += 1
-        self.ifl.label_entry(self, row, 0, "Display Line:", 4, self.sa_display_line_intvar, self.int_reg, "dBm")
+        self.label_entry(row, 0, "Display Line:", 4, self.sa_display_line_intvar, self.int_reg, "dBm")
 
         # F1
         self.awg_f1_doublevar = tk.DoubleVar(self, config.IMD_defaults["f1"], "awg_f1_doublevar")
         row += 1
-        self.ifl.label_entry(self, row, 0, "F1:", 8, self.awg_f1_doublevar,
+        self.label_entry(row, 0, "F1:", 8, self.awg_f1_doublevar,
                            self.pos_float_reg, "MHz")
         # F2
         self.awg_f2_doublevar = tk.DoubleVar(self, config.IMD_defaults["f2"], "awg_f2_doublevar")
         row += 1
-        self.ifl.label_entry(self, row, 0, "F2:", 8, self.awg_f2_doublevar,
+        self.label_entry(row, 0, "F2:", 8, self.awg_f2_doublevar,
                            self.pos_float_reg, "MHz")
 
         # Span
         self.sa_span_doublevar = tk.DoubleVar(self, config.IMD_defaults["span"], "sa_span_doublevar")
         row += 1
-        self.ifl.label_entry(self, row, 0, "Span:", 8, self.sa_span_doublevar,
+        self.label_entry(row, 0, "Span:", 8, self.sa_span_doublevar,
                            self.pos_float_reg, "kHz")
 
 
@@ -139,14 +134,14 @@ class Tab_IMD(ttk.Frame):
     def sa_clicked_callback(self):
         """ Called when the spectrum analyzer radiobutton is clicked
         Calls the radiobutton handler with the required arguments"""
-        self.ifl.instr_radiobutton_handler(self.sa_instr_info, self.change_sa_selected_state,
+        self.instr_radiobutton_handler(self.sa_instr_info, self.change_sa_selected_state,
                                            self.show_error, self.sa_int_var)
 
 
     def awg_clicked_callback(self):
         """ Called when the arbitrary waveform radiobutton is clicked
         Calls the radiobutton handler with the required arguments"""
-        self.ifl.instr_radiobutton_handler(self.awg_instr_info, self.change_awg_selected_state,
+        self.instr_radiobutton_handler(self.awg_instr_info, self.change_awg_selected_state,
                                            self.show_error, self.awg_int_var)
 
     def update_test_button_enable(self, or_bits, and_bits):
@@ -172,7 +167,7 @@ class Tab_IMD(ttk.Frame):
 
     def reset(self):
         """ Reset the tab to defaults"""
-        self.ifl.reset_instrument_select(self.sa_instr_info, self.change_sa_selected_state, self.sa_int_var)
-        self.ifl.reset_instrument_select(self.awg_instr_info, self.change_awg_selected_state, self.awg_int_var)
+        self.reset_instrument_select(self.sa_instr_info, self.change_sa_selected_state, self.sa_int_var)
+        self.reset_instrument_select(self.awg_instr_info, self.change_awg_selected_state, self.awg_int_var)
 
 
