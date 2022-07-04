@@ -162,10 +162,10 @@ class GuiCommon(ttk.Frame):
         Handler for instrument radio button selection.
 
         Parameters:
-            parent(obj) : parent frame
             instr_info (dict): A populated dictionary of state variables returned by the instrument select method
             test_button_enable_callback (function): a callback called when the test enable button is to be enabled or disabled.
             show_error_callback (function): a callback function used when a driver fails to load
+            rb_int_var(IntVar): The control variable for the radio button set
             busy_callback (function) : called with an argument of True when the driver is loading, and False when loading is complete
         Returns:
             Nothing
@@ -222,6 +222,7 @@ class GuiCommon(ttk.Frame):
             entry_width(int): Entry width in characters
             entry_text_var(StrVar): Control variable for the entry
             entry_val_reg: Validation registration object
+            unit(str): (optional) A string containing the unit name
         Returns:
               Nothing
         """
