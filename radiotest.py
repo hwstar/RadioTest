@@ -9,6 +9,7 @@ import radiotest.drivers.loader as loader
 import radiotest.gui.top as gui
 import radiotest.tests.harmspur as harmspur_test
 import radiotest.tests.imd as imd_test
+import radiotest.tests.trxlo as trxlo_test
 
 # Loader initialization
 
@@ -32,6 +33,7 @@ config.App_obj.pack(side="top", fill="both", expand=True)
 
 config.HarmSpur_test_obj = harmspur_test.TestHarmSpur()
 config.IMD_test_obj = imd_test.TestImd()
+config.TRXLO_test_obj = trxlo_test.TestTRXLO()
 
 # Forever loop
 

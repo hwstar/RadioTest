@@ -4,11 +4,18 @@ class TestSupport:
     def __init__(self):
         self.gui = None
         self.sa = None
+        self.awg = None
         self.ref_offset = 0
         self.display_line = 0
         self.fundamental = 0
         self.highest_harmonic = 0
         self.test_data = dict()
+        self.operating_freq = 0
+        self.lo_level = 0
+        self.if_carr_freq = 0
+        self.usb = False
+        self.lo_swap = False
+        self.ptt = False
 
     def sa_make_measurement(self, center_freq, span=100E6, rbw=1000, vbw=1000,
                          ref_offset=40, display_line=10, screen_dump_file=None):
@@ -88,7 +95,30 @@ class TestSupport:
             spurs.add(freq)
         return spurs
 
+    def dbm_to_vpp(self, dbm, r=50):
+        """ convert dbm to volts peak to peak"""
+        pmw = 10 ** (dbm / 10)
+        vrms = math.sqrt(pmw * (r / 1000))
+        return 2 * (math.sqrt(2) * vrms)
 
+    def dbm_to_vp(self, dbm, r=50):
+        """ convert dbm to volts peak """
+        pmw = 10 ** (dbm / 10)
+        vrms = math.sqrt(pmw * (r / 1000))
+        return (math.sqrt(2) * vrms)
+
+    def dbm_to_milliwatts(self, dbm):
+        """ convert dbm to milliwatts"""
+        return 10 ** (dbm / 10)
+
+    def dbm_to_watts(self, dbm):
+        """ convert dbm to watts """
+        pmw = self.dbm_to_milliwatts(dbm)
+        return pmw / 1000.0
+
+    def format_float_as_string(self, value, precision):
+        f_string = "{value:." + str(precision) + "f}"
+        return f_string.format(value)
 
 
 

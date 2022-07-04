@@ -85,7 +85,7 @@ class InfoFields():
         radio_buttons = dict()
         for i, instr_name in enumerate(instr_names):
             radio_buttons[instr_name] = tk.Radiobutton(parent, text=instr_name, variable=rb_int_var, value=i,
-                                                              command=rb_sel_clicked_callback)
+                                                              command=rb_sel_clicked_callback, highlightthickness=0)
             radio_buttons[instr_name].grid(row=row, column=i + 1)
 
         # Save the selected instrument, instrument names, and radio button objects
@@ -117,7 +117,8 @@ class InfoFields():
 
         return instr_info
 
-    def instr_radiobutton_handler(self, parent, instr_info, test_button_enable_callback):
+    def instr_radiobutton_handler(self, instr_info, test_button_enable_callback,
+                                  show_error_callback, rb_int_var, busy_callback=None):
         """
         Handler for instrument radio button selection.
 
@@ -125,12 +126,16 @@ class InfoFields():
             parent(obj) : parent frame
             instr_info (dict): A populated dictionary of state variables returned by the instrument select method
             test_button_enable_callback (function): a callback called when the test enable button is to be enabled or disabled.
+            show_error_callback (function): a callback function used when a driver fails to load
+            busy_callback (function) : called with an argument of True when the driver is loading, and False when loading is complete
 
         """
         instr_info["instr_selected"] = instr_info["instr_names"][instr_info["int_var"].get()]
 
         if instr_info["instr_selected"] != "None":
             try:
+                if busy_callback is not None:
+                    busy_callback(True)
                 loader_info = config.Loader_obj.load(instr_info["instr_selected"])
                 drv_inst = config.Loader_obj.get_driver_instance(loader_info)
                 instr_info["driver_inst"] = drv_inst
@@ -139,17 +144,23 @@ class InfoFields():
                 instr_info["serial"].config(text=drv_inst.sn)
                 instr_info["fw"].config(text=drv_inst.fw)
                 test_button_enable_callback(True)
+                if busy_callback is not None:
+                    busy_callback(False)
 
             except loader.LoaderError as e:
-                self.reset_instrument_select(instr_info, test_button_enable_callback)
-                parent.tk.messagebox.showerror(title="Loader Error",
+                if busy_callback is not None:
+                    busy_callback(False)
+                self.reset_instrument_select(instr_info, test_button_enable_callback, rb_int_var)
+                show_error_callback(title="Loader Error",
                                         message=str(e))
         else:
-            self.reset_instrument_select(instr_info, test_button_enable_callback)
+            self.reset_instrument_select(instr_info, test_button_enable_callback, rb_int_var)
 
-    def reset_instrument_select(self, instr_info, test_button_enable_callback):
+    def reset_instrument_select(self, instr_info, test_button_enable_callback, rb_int_var):
         """ Called when it is necessary to reset the selected instruments in a tab"""
-        test_button_enable_callback(False)
+        test_button_enable_callback(False) # Disable the test button
+        rb_int_var.set(0) # Select the None button
+        # Set the description fields to N/A
         instr_info["make"].config(text="N/A")
         instr_info["model"].config(text="N/A")
         instr_info["serial"].config(text="N/A")

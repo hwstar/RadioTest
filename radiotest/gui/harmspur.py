@@ -31,7 +31,8 @@ class Tab_Harm_Spur(ttk.Frame):
                                                      configdata.CD_FILT_SA,
                                                      "Spectrum Analyzer:",
                                                      self.sa_int_var,
-                                                     self.sa_clicked_callback)
+                                                     self.sa_clicked_callback,
+                                                     )
 
 
         # Equipment separator
@@ -57,7 +58,7 @@ class Tab_Harm_Spur(ttk.Frame):
         self.sa_fundamental_doublevar = tk.DoubleVar(self, config.Harm_spurs_defaults["fundamental"],
                                                "sa_fundamental_doublevar")
         row += 1
-        self.ifl.label_entry(self, row, 0, "Fundamental Frequency:", 4, self.sa_fundamental_doublevar,
+        self.ifl.label_entry(self, row, 0, "Fundamental Frequency:", 8, self.sa_fundamental_doublevar,
                            self.pos_float_reg, "MHz")
 
         # Highest Harmonic
@@ -111,7 +112,8 @@ class Tab_Harm_Spur(ttk.Frame):
     def sa_clicked_callback(self):
         """ Called when the spectrum analyzer radiobutton is clicked
         Calls the radiobutton handler with the required arguments"""
-        self.ifl.instr_radiobutton_handler(self, self.sa_instr_info, self.test_button_enable)
+        self.ifl.instr_radiobutton_handler(self.sa_instr_info, self.test_button_enable,
+                                           self.show_error, self.sa_int_var)
 
 
     def test_button_enable(self, state):
@@ -122,5 +124,5 @@ class Tab_Harm_Spur(ttk.Frame):
 
     def reset(self):
         """ Reset the tab to defaults"""
-        self.ifl.reset_instrument_select(self.sa_instr_info, self.test_button_enable)
+        self.ifl.reset_instrument_select(self.sa_instr_info, self.test_button_enable, self.sa_int_var)
 

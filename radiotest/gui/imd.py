@@ -34,7 +34,8 @@ class Tab_IMD(ttk.Frame):
                                                         configdata.CD_FILT_SA,
                                                         "Spectrum Analyzer:",
                                                         self.sa_int_var,
-                                                        self.sa_clicked_callback)
+                                                        self.sa_clicked_callback,
+                                                        )
 
         # ARBITRARY WAVEFORM GENERATOR
         row += 2
@@ -44,7 +45,8 @@ class Tab_IMD(ttk.Frame):
                                                         configdata.CD_FILT_AWG,
                                                         "Arbitrary Waveform Generator:",
                                                         self.awg_int_var,
-                                                        self.awg_clicked_callback)
+                                                        self.awg_clicked_callback,
+                                                        )
 
         # Equipment separator
         row += 2
@@ -137,13 +139,15 @@ class Tab_IMD(ttk.Frame):
     def sa_clicked_callback(self):
         """ Called when the spectrum analyzer radiobutton is clicked
         Calls the radiobutton handler with the required arguments"""
-        self.ifl.instr_radiobutton_handler(self, self.sa_instr_info, self.change_sa_selected_state)
+        self.ifl.instr_radiobutton_handler(self.sa_instr_info, self.change_sa_selected_state,
+                                           self.show_error, self.sa_int_var)
 
 
     def awg_clicked_callback(self):
         """ Called when the arbitrary waveform radiobutton is clicked
         Calls the radiobutton handler with the required arguments"""
-        self.ifl.instr_radiobutton_handler(self, self.awg_instr_info, self.change_awg_selected_state)
+        self.ifl.instr_radiobutton_handler(self.awg_instr_info, self.change_awg_selected_state,
+                                           self.show_error, self.awg_int_var)
 
     def update_test_button_enable(self, or_bits, and_bits):
         """ Called to enable or disable the test button"""
@@ -168,7 +172,7 @@ class Tab_IMD(ttk.Frame):
 
     def reset(self):
         """ Reset the tab to defaults"""
-        self.ifl.reset_instrument_select(self.sa_instr_info, self.change_sa_selected_state)
-        self.ifl.reset_instrument_select(self.awg_instr_info, self.change_awg_selected_state)
+        self.ifl.reset_instrument_select(self.sa_instr_info, self.change_sa_selected_state, self.sa_int_var)
+        self.ifl.reset_instrument_select(self.awg_instr_info, self.change_awg_selected_state, self.awg_int_var)
 
 

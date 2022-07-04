@@ -1,6 +1,7 @@
 import importlib
 import subprocess
 
+
 class LoaderError(Exception):
     def __init__(self, value):
         self.value = value
@@ -46,7 +47,7 @@ class Loader:
         instance = None
         try:
             instance = driver_class(info["hostname"])
-        except OSError:
+        except (OSError):
             if info["interface"] == "vxi":
                 raise LoaderError("Could not connect to host: {}".format(info["hostname"]))
         # Add 2 more keys to the info to make retrieval of the driver instance and name easy

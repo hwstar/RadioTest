@@ -71,12 +71,29 @@ class TestHarmSpur(TestSupport):
 
         close_in_spurs = spur_set_500k
         close_in_spurs.union(spur_set_2M)
-        processed_data['spurs_dbc'] = list()
+        # Eliminate the fundamental
+        if self.fundamental in close_in_spurs:
+            close_in_spurs.remove(self.fundamental)
+        # Convert spurs to relative power and save in the processed data
+        processed_data["spurs_dBc"] = list()
         for freq in close_in_spurs:
             if freq in measurement_data['spurs_500k']['freqs']:
                 index = measurement_data['spurs_500k']['freqs'].index(freq)
-                processed_data['spurs_dbc'].append([freq, -abs(measurement_data['spurs_500k']['amplitudes'][index] - fund_power)])
+                processed_data['spurs_dBc'].append(
+                    {"MHz": freq, "dBc":-abs(measurement_data['spurs_500k']['amplitudes'][index] - fund_power)})
             elif freq in measurement_data['spurs_2M']['freqs']:
                 index = measurement_data['spurs_2M']['freqs'].index(freq)
-                processed_data['spurs_dbc'].append([freq, -abs(measurement_data['spurs_2M']['amplitudes'][index] - fund_power)])
+                processed_data['spurs_dBc'].append(
+                    {"MHz": freq, "dBc": -abs(measurement_data['spurs_500k']['amplitudes'][index] - fund_power)})
+
+        # Convert harmonics to relative power and save the processed data
+        processed_data["harmonics_dBc"] = list()
+        for peaks in measurement_data["harmonics"]:
+            if peaks is not None:
+                for freq in peaks["freqs"]:
+                    if freq in harmonic_table:
+                        index = peaks["freqs"].index(freq)
+                        amplitude = peaks["amplitudes"][index]
+                        info = {"MHz": freq, "dBc": -abs(amplitude - fund_power)}
+                        processed_data["harmonics_dBc"].append(info)
         pass

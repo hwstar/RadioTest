@@ -2,6 +2,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import radiotest.gui.harmspur as harmspur
 import radiotest.gui.imd as imd
+import radiotest.gui.trxlo as trxlo
 
 
 
@@ -23,14 +24,26 @@ class Tabs(tk.Frame):
         self.notebook = ttk.Notebook(self)
         self.notebook.pack(pady=2, expand=True)
 
+        # Create the notebook tab frames
         self.tab_frames = {}
-        harm_spur_frame = harmspur.Tab_Harm_Spur(self.notebook, width=parent.screen_width, height=parent.screen_height - 60 )
-        self.tab_frames["harmspur"] = harm_spur_frame
-        imd_frame = imd.Tab_IMD(self.notebook, width=parent.screen_width, height=parent.screen_height - 60)
+        imd_frame = imd.Tab_IMD(self.notebook, width=parent.screen_width,
+                                height=parent.screen_height - 60)
         self.tab_frames["imd"] = imd_frame
 
-        self.notebook.add(imd_frame, text='IMD')
+        harm_spur_frame = harmspur.Tab_Harm_Spur(self.notebook, width=parent.screen_width,
+                                                 height=parent.screen_height - 60 )
+        self.tab_frames["harmspur"] = harm_spur_frame
+
+        trxlo_frame = trxlo.Tab_TRX_LO(self.notebook, width=parent.screen_width,
+                                                 height=parent.screen_height - 60)
+        self.tab_frames["trxlo"] = trxlo_frame
+
+        # Add the tabs
         self.notebook.add(harm_spur_frame, text='Harmonics and Spurs')
+        self.notebook.add(imd_frame, text='IMD')
+        self.notebook.add(trxlo_frame, text="TRX LO")
+
+        # Add callback to call state change functions when a new tap is clicked
         self.notebook.bind("<<NotebookTabChanged>>", self.notebook_tab_changed)
 
 
