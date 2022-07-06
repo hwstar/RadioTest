@@ -1,5 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+from tkinter.messagebox import showerror
 import radiotest.config.config as config
 import radiotest.drivers.loader as loader
 
@@ -19,7 +20,7 @@ class GuiCommon(ttk.Frame):
             index(int): Insert or delete index
             value_if_allowed(str): Edited string value to validate
             prior_value(str): String value before the edit
-            text(str): The text being insered or deleted
+            text(str): The text being inserted or deleted
             validation_type(str): The current value of the widget's validate option.
             trigger_type(str): the type of validation that triggered the callback
             widget_name(str): the tk name of the widget
@@ -48,7 +49,7 @@ class GuiCommon(ttk.Frame):
             index(int): Insert or delete index
             value_if_allowed(str): Edited string value to validate
             prior_value(str): String value before the edit
-            text(str): The text being insered or deleted
+            text(str): The text being inserted or deleted
             validation_type(str): The current value of the widget's validate option.
             trigger_type(str): the type of validation that triggered the callback
             widget_name(str): the tk name of the widget
@@ -78,7 +79,7 @@ class GuiCommon(ttk.Frame):
             index(int): Insert or delete index
             value_if_allowed(str): Edited string value to validate
             prior_value(str): String value before the edit
-            text(str): The text being insered or deleted
+            text(str): The text being inserted or deleted
             validation_type(str): The current value of the widget's validate option.
             trigger_type(str): the type of validation that triggered the callback
             widget_name(str): the tk name of the widget
@@ -221,7 +222,7 @@ class GuiCommon(ttk.Frame):
             column_start(int): The column number entry where the label entry will start (uses 2 or 3 columns)
             entry_width(int): Entry width in characters
             entry_text_var(StrVar): Control variable for the entry
-            entry_val_reg: Validation registration object
+            entry_val_reg(obj): Validation registration object
             unit(str): (optional) A string containing the unit name
         Returns:
               Nothing
@@ -247,3 +248,26 @@ class GuiCommon(ttk.Frame):
         """
         f_string = "{value:." + str(precision) + "f}"
         return f_string.format(value)
+
+    def show_error(self, title=None, message=None):
+        """ Display an error popup. This gets called by the test code
+        Parameters:
+            title(str): A title string for the error message popup
+            message(str): The error message to display
+        Returns:
+            Nothing
+        """
+
+        if title is None or message is None:
+            return
+        tk.messagebox.showerror(title=title, message=message)
+        return
+
+    def show_results(self, processed_data):
+        """ Show the results of a test
+        Parameters:
+            processed_data(obj)
+        Returns:
+            Nothing
+        """
+        pass

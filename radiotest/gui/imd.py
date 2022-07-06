@@ -1,6 +1,5 @@
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkinter.messagebox import showerror
 import radiotest.config.config as config
 import radiotest.config.configdata as configdata
 import radiotest.gui.guicommon as gc
@@ -81,11 +80,11 @@ class Tab_IMD(gc.GuiCommon):
         self.label_entry(row, 0, "F2:", 8, self.awg_f2_doublevar,
                            self.pos_float_reg, "MHz")
 
-        # Span
-        self.sa_span_doublevar = tk.DoubleVar(self, config.IMD_defaults["span"], "sa_span_doublevar")
+        # Maximum order
+        self.max_order_intvar = tk.IntVar(self, config.IMD_defaults["max_order"], "imd_max_order")
         row += 1
-        self.label_entry(row, 0, "Span:", 8, self.sa_span_doublevar,
-                           self.pos_float_reg, "kHz")
+        self.label_entry(row, 0, "Max Order:", 2, self.max_order_intvar,
+                           self.pos_float_reg)
 
 
         # Test separator
@@ -119,17 +118,11 @@ class Tab_IMD(gc.GuiCommon):
         parameters["display_line"] = self.sa_display_line_intvar.get()
         parameters["f1"] = self.awg_f1_doublevar.get()
         parameters["f2"] = self.awg_f2_doublevar.get()
-        parameters["span"] = self.sa_span_doublevar.get()
+        parameters["max_order"] = self.max_order_intvar.get()
         test_setup["parameters"] = parameters
         test_setup["gui_inst"] = self
         self.test_function(test_setup)
 
-    def show_error(self, title=None, message=None):
-        """ Display an error popup. This gets called by the test code"""
-        if title is None or message is None:
-            return
-        tk.messagebox.showerror(title=title, message=message)
-        return
 
     def sa_clicked_callback(self):
         """ Called when the spectrum analyzer radiobutton is clicked

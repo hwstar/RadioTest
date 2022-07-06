@@ -1,3 +1,4 @@
+from datetime import datetime
 import radiotest.config.config as config
 from radiotest.tests.testsupport import TestSupport
 
@@ -11,6 +12,7 @@ class TestHarmSpur(TestSupport):
 
     def run(self, test_setup):
         """ Run the test"""
+        self.start_time = datetime.now()
         # Unpack and format the data passed in
         self.gui = test_setup["gui_inst"]
         self.sa = test_setup["instruments"]["sa"]["driver_inst"]
@@ -76,25 +78,109 @@ class TestHarmSpur(TestSupport):
         if self.fundamental in close_in_spurs:
             close_in_spurs.remove(self.fundamental)
         # Convert spurs to relative power and save in the processed data
-        processed_data["spurs_dBc"] = list()
+
+        # Schema for processed_data
+        # processed_data (dict)
+        #   |
+        #   key results (list)
+        #   |  |
+        #   |legend, list results map (dict)
+        #   |  |                 |
+        #   |  |            results_table (list)
+        #   |  |                     |
+        #   |  |                   table row (dict)
+        #   | ...                    |
+        #   |                       ...
+        #   |
+        #   key test_parameters (list)
+        #   |           |
+        #   |           item dict {Parameter Name, Value, Unit}
+        #   |           |
+        #   |           ...
+        #   |
+        #   |
+        #   key equipment
+        #       |
+        #       type list
+        #           |
+        #           item dict {Name, Make, Model, Serial, Firmware}
+        #               |
+        #               ...
+        #
+        #
+        #
+        #
+
+
+
+
+        processed_data = dict()
+
+        # Test parameters
+
+        test_parameters = list()
+        now = datetime.now()
+        run_time = str(now - self.start_time)
+        test_parameters.append({"Time stamp": self.get_timestamp(now), "Unit": None})
+        test_parameters.append({"Run time": run_time, "Unit": "Seconds"})
+        test_parameters.append({"Fundamental": self.fundamental, "Unit": "MHz"})
+        test_parameters.append({"Reference Offset": self.ref_offset, "Unit": "dB"})
+        test_parameters.append({"Display Line": self.display_line, "Unit": "dB"})
+        test_parameters.append({"Highest Harmonic": self.highest_harmonic, "Unit": None})
+
+        processed_data["test_parameters"] = test_parameters
+
+        # Test equipment
+        test_equipment = list()
+        test_equipment.append({"Name": "Spectrum Analyzer", "Make": self.sa.make,
+                               "Model": self.sa.model, "Serial": self.sa.sn,
+                               "Firmware": self.sa.fw
+                               })
+        """
+        test_equipment.append({"Name": "Arbitrary Waveform Generator", "Make": self.awg.make,
+                               "Model": self.awg.model, "Serial": self.awg.sn,
+                               "Firmware": self.awg.fw
+                               })
+        """
+        processed_data["test_equipment"] = test_equipment
+
+
+
+        processed_data["results"] = list()
+        results_table = list()
+        i = 1
         for freq in close_in_spurs:
             if freq in measurement_data['spurs_500k']['freqs']:
                 index = measurement_data['spurs_500k']['freqs'].index(freq)
-                processed_data['spurs_dBc'].append(
-                    {"MHz": freq, "dBc":-abs(measurement_data['spurs_500k']['amplitudes'][index] - fund_power)})
+                results_table.append(
+                    {"Spur": i, "MHz": freq, "dBc":-abs(measurement_data['spurs_500k']['amplitudes'][index] - fund_power)})
+                i += 1
             elif freq in measurement_data['spurs_2M']['freqs']:
                 index = measurement_data['spurs_2M']['freqs'].index(freq)
-                processed_data['spurs_dBc'].append(
-                    {"MHz": freq, "dBc": -abs(measurement_data['spurs_500k']['amplitudes'][index] - fund_power)})
+                results_table.append(
+                    {"Spur": i, "MHz": freq, "dBc": -abs(measurement_data['spurs_500k']['amplitudes'][index] - fund_power)})
+                i += 1
+        # Append legend and results table
+
+        processed_data["results"].append({"Spurious Emissions": results_table})
+
+
 
         # Convert harmonics to relative power and save the processed data
-        processed_data["harmonics_dBc"] = list()
+        results_table = list()
         for peaks in measurement_data["harmonics"]:
             if peaks is not None:
                 for freq in peaks["freqs"]:
                     if freq in harmonic_table:
                         index = peaks["freqs"].index(freq)
                         amplitude = peaks["amplitudes"][index]
-                        info = {"MHz": freq, "dBc": -abs(amplitude - fund_power)}
-                        processed_data["harmonics_dBc"].append(info)
+                        info = {"Harmonic": harmonic_table.index(freq)+2, "MHz": freq, "dBc": -abs(amplitude - fund_power)}
+                        results_table.append(info)
+        # Append legend and results table
+        processed_data["results"].append({"Harmonics": results_table})
+
+        self.gui.show_results(processed_data)
+
         pass
+
+

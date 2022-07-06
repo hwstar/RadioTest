@@ -1,17 +1,25 @@
 import math
+from datetime import datetime
 
 class TestSupport:
     def __init__(self):
         self.gui = None
         self.sa = None
         self.awg = None
+
+        self.start_time = None
+        self.tone_level = 0
         self.ref_offset = 0
         self.display_line = 0
         self.fundamental = 0
+        self.f1 = 0
+        self.f2 = 0
+        self.max_order = 0
         self.highest_harmonic = 0
-        self.test_data = dict()
+        self.two_tone_products = 0
         self.operating_freq = 0
         self.lo_level = 0
+        self.tone_level = 0
         self.if_carr_freq = 0
         self.usb = False
         self.lo_swap = False
@@ -112,6 +120,56 @@ class TestSupport:
             harmonic_table.append(i * fundamental)
         return harmonic_table
 
+    def build_two_tone_products_list(self, f1, f2, maxorder):
+        """ Build a list of 2 tone products
+           Parameters:
+               f1(float): First tone in Hz
+               f2(float): Second tone in Hz
+               maxorder(int): Maximum order
+           Returns:
+               dict containing all of the imd products from third order to max order
+        """
+        products = dict()
+
+        if maxorder < 3:
+            return products
+        all_products = list()
+        products["by_product"] = dict()
+        for i in range(1, int(maxorder/2) + 1):
+            product = list()
+            a = (i+1)*f1 - i*f2
+            b = (i+1)*f2 - i*f1
+            product.append(a)
+            product.append(b)
+            all_products.append(a)
+            all_products.append(b)
+            products["by_product"][str(i*2+1)] = product
+        products['all'] = all_products
+        return products
+
+    def sa_get_peak(self, measurement, freq, freq_tol):
+        """
+        Find a peak at a specific frequency in the measurement table supplied
+        Parameters:
+            measurement(dict): The data returned from a prior measurement
+            freq(float): The frequency of the requested peak
+            freq_tol(float): The acceptable tolerance to use when searching the table
+
+        Returns:
+            a dict containing the actual frequency, and the amplitude if it exists
+            otherwise None
+
+        """
+        for i, f in enumerate(measurement['freqs']):
+            delta = abs(f-freq)
+            if delta <= freq_tol:
+                return {"freq": f, "amplitude": measurement['amplitudes'][i]}
+        return None
+
+
+
+
+
     def sa_get_spur_set(self, fund_and_harm_table, peak_data):
         """ Return spur set from peak table
         Parameters:
@@ -129,6 +187,10 @@ class TestSupport:
                 continue
             spurs.add(freq)
         return spurs
+
+    def get_timestamp(self, now):
+        return now.strftime("%a, %B %d, %Y, %H:%M:%S")
+
 
     def dbm_to_vpp(self, dbm, r=50):
         """ Convert dbm to volts peak to peak
@@ -173,6 +235,7 @@ class TestSupport:
         """
         pmw = self.dbm_to_milliwatts(dbm)
         return pmw / 1000.0
+
 
 
 
