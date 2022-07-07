@@ -12,6 +12,7 @@ class Tab_IMD(gc.GuiCommon):
         ttk.Frame.__init__(self, parent, **kwargs)
         self.parent = parent
         self.test_function = None
+        self.processed_data = None
         self.test_button_enable_state = 0
 
         # Registration of validation functions
@@ -67,7 +68,7 @@ class Tab_IMD(gc.GuiCommon):
         self.sa_display_line_intvar = tk.IntVar(self, config.IMD_defaults["display_line"],
                                                 "sa_display_line_intvar")
         row += 1
-        self.label_entry(row, 0, "Display Line:", 4, self.sa_display_line_intvar, self.int_reg, "dBm")
+        self.label_entry(row, 0, "Measurement Threshold:", 4, self.sa_display_line_intvar, self.int_reg, "dBm")
 
         # F1
         self.awg_f1_doublevar = tk.DoubleVar(self, config.IMD_defaults["f1"], "awg_f1_doublevar")
@@ -109,9 +110,12 @@ class Tab_IMD(gc.GuiCommon):
         sa_dict = dict()
         awg_dict = dict()
         sa_dict["driver_inst"] = self.sa_instr_info["driver_inst"]
+        sa_dict["name"] = "Spectrum Analyzer"
         awg_dict["driver_inst"] = self.awg_instr_info["driver_inst"]
+        awg_dict["name"] = "Arbitrary Waveform Generator"
         instruments = {"sa": sa_dict, "awg": awg_dict}
         test_setup["instruments"] = instruments
+
         parameters = dict()
         parameters["ref_offset"] = self.sa_ref_offset_intvar.get()
         parameters["tone_level"] = self.awg_tone_level_intvar.get()
@@ -121,7 +125,9 @@ class Tab_IMD(gc.GuiCommon):
         parameters["max_order"] = self.max_order_intvar.get()
         test_setup["parameters"] = parameters
         test_setup["gui_inst"] = self
-        self.test_function(test_setup)
+        processed_data = self.test_function(test_setup)
+        if processed_data is None:
+            return
 
 
     def sa_clicked_callback(self):

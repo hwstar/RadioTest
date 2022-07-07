@@ -44,8 +44,8 @@ class TestImd(TestSupport):
         self.awg.output_sourcez(1, 50)
         self.awg.output_sourcez(2, 50)
         # Set the frequencies
-        self.awg.sine(1, self.f1)
-        self.awg.sine(2, self.f2)
+        self.awg.sine(1, freq=self.f1, amplitude=tone_vpp, offset=0.0, phase=0.0)
+        self.awg.sine(2, freq=self.f2, amplitude=tone_vpp, offset=0.0, phase=0.0)
         # Enable the outputs
         self.awg.output_on(1)
         self.awg.output_on(2)
@@ -117,57 +117,64 @@ class TestImd(TestSupport):
         test_parameters.append({"Tone Level": self.tone_level, "Unit": "dBm"})
         test_parameters.append({"Order": self.max_order, "Unit": None})
 
-        processed_data["test_parameters"] = test_parameters
+
 
         # Test equipment
         test_equipment = list()
-        test_equipment.append({"Name": "Spectrum Analyzer", "Make": self.sa.make,
-                               "Model": self.sa.model, "Serial": self.sa.sn,
-                               "Firmware": self.sa.fw
-                               })
-        test_equipment.append({"Name": "Arbitrary Waveform Generator", "Make": self.awg.make,
-                               "Model": self.awg.model, "Serial": self.awg.sn,
-                               "Firmware": self.awg.fw
-                               })
+        for key, value in test_setup["instruments"].items():
+            item = {"Name": value["name"], "Make": value["driver_inst"].make,
+                    "Model": value["driver_inst"].model, "Serial": value["driver_inst"].sn,
+                    "Firmware": value["driver_inst"].fw
+                    }
+            test_equipment.append(item)
 
         processed_data["test_equipment"] = test_equipment
 
 
         # Find F1 and F2, and get their amplitudes
-        f1_peak_amplitude = self.sa_get_peak(result, self.f1, 100)
+        f1_peak_power = self.sa_get_peak(result, self.f1, 100)
 
-        if f1_peak_amplitude is None:
+        if f1_peak_power is None:
             self.gui.show_error(title="Measurement Setup Error", message="Did not see a peak for F1 in the measurement data. Check your setup for cabling errors")
             return
-        f2_peak_amplitude = self.sa_get_peak(result, self.f2, 100)
-        if f1_peak_amplitude is None:
+        f2_peak_power = self.sa_get_peak(result, self.f2, 100)
+        if f2_peak_power is None:
             self.gui.show_error(title="Measurement Setup Error", message="Did not see a peak for F2 in the measurement data. Check your setup for cabling errors")
-            return
+            return None
 
         # Establish carrier power
-        carrier_power = min(f1_peak_amplitude["amplitude"], f2_peak_amplitude["amplitude"])
+        carrier_power = min(f1_peak_power["amplitude"], f2_peak_power["amplitude"])
+
+
 
         # Retrieve the IMD products from the measurement data, and reference then to the carrier power
         # Test results
         processed_data["results"] = list()
-        results_table = list()
+        results_table_products = list()
         for order, freqs in self.two_tone_products["by_product"].items():
 
             left = self.sa_get_peak(result, freqs[0], 100)
 
             if left is not None:
-                results_table.append({"Order": order, 'Freq': freqs[0],
+                results_table_products.append({"Order": order, 'Freq': freqs[0],
                                       "Amplitude": -abs(carrier_power-left["amplitude"])})
 
             right = self.sa_get_peak(result, freqs[1], 100)
 
             if right is not None:
-                results_table.append({"Order": order, 'Freq': freqs[1],
+                results_table_products.append({"Order": order, 'Freq': freqs[1],
                                       "Amplitude": -abs(carrier_power - right["amplitude"])})
 
+        processed_data["test_parameters"] = test_parameters
+        processed_data["results"].append({"IMD Products List": results_table_products})
 
-        processed_data["results"].append({"IMD Products List": results_table})
+        # Place f1 and f2 peak power in the test results
+        results_table_f1_f2 = list()
+        results_table_f1_f2.append({"F1 Output Power": f1_peak_power, "Unit": "dBm"})
+        results_table_f1_f2.append({"F2 Output Power": f2_peak_power, "Unit": "dBm"})
 
-        self.gui.show_results(processed_data)
+        processed_data["results"].append({"F1/F2 Output Power": results_table_f1_f2})
 
-        pass
+
+        return processed_data
+

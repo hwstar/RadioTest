@@ -28,7 +28,7 @@ class GuiCommon(ttk.Frame):
             True if the entry is to be accepted, false if it is to be rejected
         """
 
-        if (action == '1'):
+        if  action == '1':
             if text in '0123456789.':
                 try:
                     float(value_if_allowed)
@@ -95,7 +95,7 @@ class GuiCommon(ttk.Frame):
         else:
             return True
 
-    def instrument_select(self, row, instr_filter, instr_text, rb_int_var, rb_sel_clicked_callback):
+    def instrument_select(self, row, instr_filter, instr_text, rb_int_var, rb_sel_clicked_callback, enabled=True):
         """ Helper to select an instrument
 
         Parameters:
@@ -104,6 +104,7 @@ class GuiCommon(ttk.Frame):
             instr_text(str): Name of the label field used to identify the radiobutton set
             rb_int_var(IntVar obj): the Intvar object used by the radiobutton set
             rb_sel_clicked_callback(function): Function called when a radiobutton is clicked
+            enabled(bool): Enable or disable the radio buttons
 
         Returns:
              a dict containing the instrument names, radio button objects, and the make, model, serial and fw label objects
@@ -123,9 +124,12 @@ class GuiCommon(ttk.Frame):
         instr_names = ["None"]
         instr_names = instr_names + (config.Config_obj.get_instrument_names_of_type(instr_filter))
         radio_buttons = dict()
+        state = tk.NORMAL if enabled is True else tk.DISABLED
+
         for i, instr_name in enumerate(instr_names):
             radio_buttons[instr_name] = tk.Radiobutton(self, text=instr_name, variable=rb_int_var, value=i,
-                                                              command=rb_sel_clicked_callback, highlightthickness=0)
+                                                       command=rb_sel_clicked_callback,
+                                                       highlightthickness=0, state=state)
             radio_buttons[instr_name].grid(row=row, column=i + 1)
 
         # Save the selected instrument, instrument names, and radio button objects
@@ -156,6 +160,23 @@ class GuiCommon(ttk.Frame):
         instr_info["fw"].grid(row=row, column=7)
 
         return instr_info
+
+    def enable_instrument_radiobuttons(self, instr_info, enabled=True):
+        """"
+        Enable or disable the radio buttons for an instrument
+
+        Parameters:
+                instr_info(obj):    Information for the instrument
+                enabled(bool):  Enable or disable the buttons for the instrument
+        Returns:
+                Nothing
+
+        """
+        state = tk.NORMAL if enabled is True else tk.DISABLED
+        for radiobutton in instr_info["radiobuttons"].values():
+            radiobutton.configure(state=state)
+
+
 
     def instr_radiobutton_handler(self, instr_info, test_button_enable_callback,
                                   show_error_callback, rb_int_var, busy_callback=None):
@@ -215,7 +236,8 @@ class GuiCommon(ttk.Frame):
         instr_info["serial"].config(text="N/A")
         instr_info["fw"].config(text="N/A")
 
-    def label_entry(self, row, column_start, label, entry_width, entry_text_var, entry_val_reg, unit=None):
+    def label_entry(self, row, column_start, label, entry_width, entry_text_var, entry_val_reg, unit=None,
+                    enabled = True):
         """Helper to create a Label/Entry and optional unit Label column depending if unit is specified
         Parameters:
             row(int): The row number for the label entry
@@ -224,8 +246,9 @@ class GuiCommon(ttk.Frame):
             entry_text_var(StrVar): Control variable for the entry
             entry_val_reg(obj): Validation registration object
             unit(str): (optional) A string containing the unit name
+            enabled(bool): Enable the entry if true
         Returns:
-              Nothing
+              entry_item
         """
         label_item = ttk.Label(self, text=label)
         label_item.grid(row=row, column=column_start)
@@ -234,9 +257,12 @@ class GuiCommon(ttk.Frame):
                                            validatecommand=(
                                                entry_val_reg, '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W'))
         entry_item.grid(row=row, column=column_start+1)
+        state = tk.NORMAL if enabled is True else tk.DISABLED
+        entry_item.configure(state = state)
         if unit is not None:
             unit_item = ttk.Label(self, text=unit)
             unit_item.grid(row=row, column=column_start+2)
+        return entry_item
 
     def format_float_as_string(self, value, precision):
         """ Format a floating point number as a string with the supplied precision

@@ -121,12 +121,13 @@ class Tab_TRX_LO(gc.GuiCommon):
 
     def run_test(self):
         """ This gets called when the user presses the run test button"""
-
+        if self.test_function is None:
+            return
         # Format a data structure containing the test setup to pass to the tests run function
         test_setup = dict()
-        sa_dict = dict()
         awg_dict = dict()
         awg_dict["driver_inst"] = self.awg_instr_info["driver_inst"]
+        awg_dict["name"] = "Arbitrary Waveform Generator"
         instruments = {"awg": awg_dict}
         test_setup["instruments"] = instruments
         parameters = dict()
@@ -138,9 +139,8 @@ class Tab_TRX_LO(gc.GuiCommon):
         parameters["ptt"] = True if self.trxlo_ptt_intvar.get() == 1 else False
         test_setup["parameters"] = parameters
         test_setup["gui_inst"] = self
-        if self.test_function is not None:
-            self.test_function(test_setup)
-        pass
+        self.test_function(test_setup)
+
 
     def show_error(self, title=None, message=None):
         """ Display an error popup. This gets called by the test code"""

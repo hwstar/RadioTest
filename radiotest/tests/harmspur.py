@@ -20,6 +20,10 @@ class TestHarmSpur(TestSupport):
         self.display_line = test_setup["parameters"]["display_line"]
         self.fundamental = test_setup["parameters"]["fundamental"] * 1E6  # Convert to Hz
         self.highest_harmonic = test_setup["parameters"]["highest_harmonic"]
+        self.use_awg = test_setup["parameters"]["use_awg"]
+        if self.use_awg is True:
+            self.awg = test_setup["instruments"]["awg"]["driver_inst"]
+            self.tone_level = test_setup["parameters"]["tone_level"]
 
 
         # Calculate the span from the fundamental to the highest harmonic plus 1 MHz
@@ -30,6 +34,18 @@ class TestHarmSpur(TestSupport):
 
         # Calculate a table of harmonics
         harmonic_table = self.build_harmonic_list(self.fundamental, self.highest_harmonic)
+
+        # Set up the AWG if enabled
+        if self.use_awg is True:
+            self.awg.rst()
+            # Convert tone level to volts P-P
+            tone_vpp = self.dbm_to_vpp(self.tone_level)
+            # Set output impedance for channel 1
+            self.awg.output_sourcez(1, 50)
+            # Set the tone frequency
+            # Set the amplitude
+            self.awg.sine(1, freq=self.fundamental, amplitude=tone_vpp, offset=0.0, phase=0.0)
+            self.awg.output_on(1)
 
         # Create another table which includes the fundamental and the harmonics
         fund_and_harm_table = [self.fundamental] + harmonic_table
@@ -46,7 +62,7 @@ class TestHarmSpur(TestSupport):
             self.gui.show_error(title="No fundamental Peak",
                                message="Did not see the fundamental frequency in the peak data.\
                                 Check your setup, and your fundamental frequency parameter")
-            return
+            return None
 
         # *** Test for close-in spurs @+/-1MHz  which might not have been filtered out by the TRX bandpass filter ***
 
@@ -123,51 +139,50 @@ class TestHarmSpur(TestSupport):
         run_time = str(now - self.start_time)
         test_parameters.append({"Time stamp": self.get_timestamp(now), "Unit": None})
         test_parameters.append({"Run time": run_time, "Unit": "Seconds"})
-        test_parameters.append({"Fundamental": self.fundamental, "Unit": "MHz"})
+        test_parameters.append({"Fundamental Frequency": self.fundamental, "Unit": "MHz"})
         test_parameters.append({"Reference Offset": self.ref_offset, "Unit": "dB"})
         test_parameters.append({"Display Line": self.display_line, "Unit": "dB"})
         test_parameters.append({"Highest Harmonic": self.highest_harmonic, "Unit": None})
-
+        use_awg = "YES" if self.use_awg is True else "NO"
+        test_parameters.append({"Use AWG": use_awg})
+        if self.use_awg is True:
+            test_parameters.append({"AWG Tone Level": self.tone_level, "Unit": "dBm"})
         processed_data["test_parameters"] = test_parameters
 
         # Test equipment
+
         test_equipment = list()
-        test_equipment.append({"Name": "Spectrum Analyzer", "Make": self.sa.make,
-                               "Model": self.sa.model, "Serial": self.sa.sn,
-                               "Firmware": self.sa.fw
-                               })
-        """
-        test_equipment.append({"Name": "Arbitrary Waveform Generator", "Make": self.awg.make,
-                               "Model": self.awg.model, "Serial": self.awg.sn,
-                               "Firmware": self.awg.fw
-                               })
-        """
+        for key, value in test_setup["instruments"].items():
+            item = {"Name": value["name"], "Make": value["driver_inst"].make,
+                    "Model": value["driver_inst"].model, "Serial": value["driver_inst"].sn,
+                    "Firmware": value["driver_inst"].fw
+                    }
+            test_equipment.append(item)
+
         processed_data["test_equipment"] = test_equipment
 
-
+        # Test results
 
         processed_data["results"] = list()
-        results_table = list()
+        results_table_spurs = list()
         i = 1
         for freq in close_in_spurs:
             if freq in measurement_data['spurs_500k']['freqs']:
                 index = measurement_data['spurs_500k']['freqs'].index(freq)
-                results_table.append(
+                results_table_spurs.append(
                     {"Spur": i, "MHz": freq, "dBc":-abs(measurement_data['spurs_500k']['amplitudes'][index] - fund_power)})
                 i += 1
             elif freq in measurement_data['spurs_2M']['freqs']:
                 index = measurement_data['spurs_2M']['freqs'].index(freq)
-                results_table.append(
+                results_table_spurs.append(
                     {"Spur": i, "MHz": freq, "dBc": -abs(measurement_data['spurs_500k']['amplitudes'][index] - fund_power)})
                 i += 1
         # Append legend and results table
 
-        processed_data["results"].append({"Spurious Emissions": results_table})
-
-
+        processed_data["results"].append({"Spurious Emissions": results_table_spurs})
 
         # Convert harmonics to relative power and save the processed data
-        results_table = list()
+        results_table_harmonics = list()
         for peaks in measurement_data["harmonics"]:
             if peaks is not None:
                 for freq in peaks["freqs"]:
@@ -175,12 +190,16 @@ class TestHarmSpur(TestSupport):
                         index = peaks["freqs"].index(freq)
                         amplitude = peaks["amplitudes"][index]
                         info = {"Harmonic": harmonic_table.index(freq)+2, "MHz": freq, "dBc": -abs(amplitude - fund_power)}
-                        results_table.append(info)
+                        results_table_harmonics.append(info)
         # Append legend and results table
-        processed_data["results"].append({"Harmonics": results_table})
+        processed_data["results"].append({"Harmonics": results_table_harmonics})
 
-        self.gui.show_results(processed_data)
+        results_table_output_power = list()
+        results_table_output_power.append({"Output Power (dBm)": fund_power, "Unit": "dBm"})
+        results_table_output_power.append({"Output Power (W)": self.dbm_to_watts(fund_power), "Unit": "W"})
+        processed_data["results"].append({"Output power": results_table_output_power})
 
-        pass
+
+        return processed_data
 
 

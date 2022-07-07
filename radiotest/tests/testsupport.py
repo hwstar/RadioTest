@@ -24,6 +24,7 @@ class TestSupport:
         self.usb = False
         self.lo_swap = False
         self.ptt = False
+        self.use_awg = False
 
     def sa_make_measurement(self, center_freq, span=100E6, rbw=1000, vbw=1000,
                             ref_offset=40, display_line=10, screen_dump_file=None):

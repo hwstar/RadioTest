@@ -49,6 +49,4 @@ class TestTRXLO(TestSupport):
         self.awg.output_on(1)
         self.awg.output_on(2)
 
-
-
-        pass
+        return None
