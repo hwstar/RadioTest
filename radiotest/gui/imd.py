@@ -87,6 +87,14 @@ class Tab_IMD(gc.GuiCommon):
         self.label_entry(row, 0, "Max Order:", 2, self.max_order_intvar,
                            self.pos_float_reg)
 
+        # IMD screenshot
+        self.cb_imd_screenshot_intvar = tk.IntVar(self, 0, "checkbox_imd_intvar")
+        row += 1
+        self.imd_ss_inst = tk.Checkbutton(self, text="Capture IMD screenshot",
+                                              onvalue=1,
+                                              variable=self.cb_imd_screenshot_intvar,
+                                              offvalue=0, height=2, width=30)
+        self.imd_ss_inst.grid(row=row, column=1, sticky=tk.W)
 
         # Test separator
         row += 1
@@ -123,6 +131,7 @@ class Tab_IMD(gc.GuiCommon):
         parameters["f1"] = self.awg_f1_doublevar.get()
         parameters["f2"] = self.awg_f2_doublevar.get()
         parameters["max_order"] = self.max_order_intvar.get()
+        parameters["imd_screenshot"] = True if self.cb_imd_screenshot_intvar.get() == 1 else False
         test_setup["parameters"] = parameters
         test_setup["gui_inst"] = self
         processed_data = self.test_function(test_setup)

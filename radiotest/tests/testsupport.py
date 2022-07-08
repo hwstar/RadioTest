@@ -25,9 +25,12 @@ class TestSupport:
         self.lo_swap = False
         self.ptt = False
         self.use_awg = False
+        self.harm_screen_dump = False
+
+        self.imd_screen_dump = False
 
     def sa_make_measurement(self, center_freq, span=100E6, rbw=1000, vbw=1000,
-                            ref_offset=40, display_line=10, screen_dump_file=None):
+                            ref_offset=40, display_line=10, screen_dump_name=None):
         """ Set up and make a measurement
         Parameters:
             center_freq(float): Center frequency of the measurement in Hz
@@ -36,14 +39,14 @@ class TestSupport:
             vbw(int): Spectrum analyzer video bandwidth in Hz
             ref_offset(int): The offset used to account for any attenuators between the DUT and the spectrum amalyzer
             display_line(int): Threshold in dB above which peaks will be recorded
-            screen_dump_file(str): (optional) A path to save the screen dump from the spectrum analyzer
+            screen_dump_name(str): (optional) A name for the screen dump from the spectrum analyzer
 
         Returns:
             If peaks were detected, this method returns a dictionary containing 2 tables.
             If no peaks are detected, this method will return None.
             The dictionary keys are "freqs" and "amplitudes". Each contains a list of frequencies or amplitudes.
             """
-
+        res = dict()
         self.sa.rst()
         self.sa.set_single_sweep()
         self.sa.set_center_freq(center_freq)
@@ -69,8 +72,9 @@ class TestSupport:
         if points > 0:
             points_str = self.sa.get_peak_data()
         # If a screen dump file has been specified, then get that data now.
-        if screen_dump_file is not None:
-            self.sa.save_screendump(screen_dump_file)
+        if screen_dump_name is not None:
+            size, data = self.sa.get_screendump()
+            res["screen_dump"] = {"name": screen_dump_name, "size": size, "data": data}
         # Reset the spectrum analyzer
         self.sa.rst()
 
@@ -85,7 +89,7 @@ class TestSupport:
         freqs = raw_points[0::][::2] # Even values
         # Retrieve the amplitudes of the peaks
         amplitudes = raw_points[1::][::2] # Odd values
-        res = dict()
+
         res["freqs"] = freqs
         res["amplitudes"] = amplitudes
         return res

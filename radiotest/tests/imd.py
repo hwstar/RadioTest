@@ -25,6 +25,7 @@ class TestImd(TestSupport):
         self.f1 = test_setup["parameters"]["f1"] * 1E6  # Convert to Hz
         self.f2 = test_setup["parameters"]["f2"] * 1E6  # Convert to Hz
         self.max_order = test_setup["parameters"]["max_order"]
+        self.imd_screen_dump = test_setup["parameters"]["imd_screenshot"]
         self.two_tone_products = self.build_two_tone_products_list(self.f1, self.f2, self.max_order)
 
         # Calculate span and center frequency
@@ -56,12 +57,14 @@ class TestImd(TestSupport):
         #
         # Use the spectrum analyzer to make the measurement
         #
+        screen_dump_name = "IMD Screen Dump" if self.imd_screen_dump is True else None
         result = self.sa_make_measurement(center_freq,
                                           ref_offset=self.ref_offset,
                                           span=span,
                                           rbw=100,
                                           vbw=100,
                                           display_line=self.display_line,
+                                          screen_dump_name=screen_dump_name
                                           )
         # The measurement should have returned a dict with one table of frequencies "freqs"
         # and one table of amplitudes
@@ -87,29 +90,36 @@ class TestImd(TestSupport):
         #   |
         #   |
         #   key equipment
+        #   |    |
+        #   |    type list
+        #   |        |
+        #   |     item dict {Name, Make, Model, Serial, Firmware}
+        #   |            |
+        #   |           ...
+        #   key screen_dumps (list)
         #       |
-        #       type list
-        #           |
-        #           item dict {Name, Make, Model, Serial, Firmware}
-        #               |
-        #               ...
-        #
-        #
+        #       screendump(dict) {name, size, data}
+        #       |
+        #      ...
         #
         #
 
         # Create top level dict
         processed_data = dict()
 
-
+        # Test metrics
+        test_metrics = list()
+        now = datetime.now()
+        run_time = str(now - self.start_time)
+        test_metrics.append({"Time stamp": self.get_timestamp(now), "Unit": None})
+        test_metrics.append({"Run time": run_time, "Unit": "Seconds"})
+        processed_data["test_metrics"] = test_metrics
 
         # Test parameters
 
         test_parameters = list()
         now = datetime.now()
         run_time = str(now - self.start_time)
-        test_parameters.append({"Time stamp": self.get_timestamp(now), "Unit": None})
-        test_parameters.append({"Run time": run_time, "Unit": "Seconds"})
         test_parameters.append({"F1": self.f1, "Unit": "MHz"})
         test_parameters.append({"F2": self.f2, "Unit": "MHz"})
         test_parameters.append({"Reference Offset": self.ref_offset,"Unit": "dB"})
@@ -174,6 +184,12 @@ class TestImd(TestSupport):
         results_table_f1_f2.append({"F2 Output Power": f2_peak_power, "Unit": "dBm"})
 
         processed_data["results"].append({"F1/F2 Output Power": results_table_f1_f2})
+
+        # if a screen dump was specified, insert it here
+        processed_data["screen_dumps"] = list()
+        if self.imd_screen_dump is True:
+            processed_data["screen_dumps"].append(result["screen_dump"])
+
 
 
         return processed_data

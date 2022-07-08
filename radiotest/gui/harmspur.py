@@ -95,6 +95,15 @@ class Tab_Harm_Spur(gc.GuiCommon):
         self.tone_level_entry_item = self.label_entry(row, 0, "AWG Tone Level:", 4, self.awg_tone_level_intvar,
                          self.int_reg, unit="dBm", enabled=False)
 
+        # Harmonics screenshot
+        self.cb_harm_ss_intvar = tk.IntVar(self, 0, "checkbox_harm_intvar")
+        row += 1
+        self.harm_ss_inst = tk.Checkbutton(self, text="Capture Harmonics screenshot",
+                                              onvalue=1,
+                                              variable=self.cb_harm_ss_intvar,
+                                              offvalue=0, height=2, width=30)
+        self.harm_ss_inst.grid(row=row, column=1, sticky=tk.W)
+
         # Test separator
         row += 1
         self.test_sep = ttk.Separator(self, orient=tk.HORIZONTAL)
@@ -131,6 +140,7 @@ class Tab_Harm_Spur(gc.GuiCommon):
         parameters["display_line"] = self.sa_display_line_intvar.get()
         parameters["fundamental"] = self.sa_fundamental_doublevar.get()
         parameters["highest_harmonic"] = self.sa_highest_harmonic_intvar.get()
+        parameters["harm_screenshot"] = True if self.cb_harm_ss_intvar.get() == 1 else False
         test_setup["parameters"] = parameters
         test_setup["gui_inst"] = self
         self.processed_data = self.test_function(test_setup)

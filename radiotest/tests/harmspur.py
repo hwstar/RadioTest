@@ -21,6 +21,7 @@ class TestHarmSpur(TestSupport):
         self.fundamental = test_setup["parameters"]["fundamental"] * 1E6  # Convert to Hz
         self.highest_harmonic = test_setup["parameters"]["highest_harmonic"]
         self.use_awg = test_setup["parameters"]["use_awg"]
+        self.harm_screen_dump = test_setup["parameters"]["harm_screenshot"]
         if self.use_awg is True:
             self.awg = test_setup["instruments"]["awg"]["driver_inst"]
             self.tone_level = test_setup["parameters"]["tone_level"]
@@ -53,6 +54,8 @@ class TestHarmSpur(TestSupport):
         # *** Test for close-in spurs @+/-250 kHz  which might not have been filtered out by the TRX bandpass filter ***
 
         measurement_data = dict()
+        measurement_data["screen_dumps"] = dict()
+
         measurement_data["spurs_500k"] = self.sa_make_measurement(self.fundamental, span=5E5, rbw=1000, vbw=1000,
                                                           ref_offset=self.ref_offset, display_line= self.display_line)
 
@@ -71,18 +74,32 @@ class TestHarmSpur(TestSupport):
                                                                   display_line=self.display_line)
 
         # For best accuracy, measure each of the harmonics one by one with a 500 kHz span
+
         measurement_data["harmonics"] = list()
         for i, harmonic in enumerate(harmonic_table):
             measurement_data["harmonics"].append(self.sa_make_measurement(harmonic_table[i], span=5E5, rbw=1000,
                                                                           vbw=1000, ref_offset=self.ref_offset,
-                                                                          display_line=self.display_line))
+                                                                          display_line=self.display_line
+                                                                          ))
+
+        # If requested, get a complete screen shot of all the harmonics
+        screen_dump_name = "Harmonics Screen Dump" if self.harm_screen_dump is True else None
+        if screen_dump_name is not None:
+            measurement_data["screen_dumps"]["harmonics"] = (self.sa_make_measurement(center_freq_hz,
+                                                                                     span=span_all_hz, rbw=10000,
+                                                                                     vbw=10000,
+                                                                                     ref_offset=self.ref_offset,
+                                                                                     display_line=self.display_line,
+                                                                                     screen_dump_name=screen_dump_name
+                                                                                     ))
+
 
         # Uncomment for debug
         #measurement_data['spurs_500k']['freqs'].append(6.123456)
         #measurement_data['spurs_500k']['amplitudes'].append(19.1234)
 
         # *** Data processing ***
-        processed_data = dict()
+
 
         # Process the two spur lists
         spur_set_500k = self.sa_get_spur_set(fund_and_harm_table, measurement_data['spurs_500k'])
@@ -116,29 +133,34 @@ class TestHarmSpur(TestSupport):
         #   |
         #   |
         #   key equipment
+        #   |    |
+        #   |    type list
+        #   |        |
+        #   |        item dict {Name, Make, Model, Serial, Firmware}
+        #   |            |
+        #   |            ...
+        #   key screen_dumps (list)
         #       |
-        #       type list
-        #           |
-        #           item dict {Name, Make, Model, Serial, Firmware}
-        #               |
-        #               ...
-        #
-        #
+        #       screendump(dict) {name, size, data}
+        #       |
+        #      ...
         #
         #
 
-
-
-
+        # Create top level dict
         processed_data = dict()
 
-        # Test parameters
 
-        test_parameters = list()
+        # Test metrics
+        test_metrics = list()
         now = datetime.now()
         run_time = str(now - self.start_time)
-        test_parameters.append({"Time stamp": self.get_timestamp(now), "Unit": None})
-        test_parameters.append({"Run time": run_time, "Unit": "Seconds"})
+        test_metrics.append({"Time stamp": self.get_timestamp(now), "Unit": None})
+        test_metrics.append({"Run time": run_time, "Unit": "Seconds"})
+        processed_data["test_metrics"] = test_metrics
+
+        # Test parameters
+        test_parameters = list()
         test_parameters.append({"Fundamental Frequency": self.fundamental, "Unit": "MHz"})
         test_parameters.append({"Reference Offset": self.ref_offset, "Unit": "dB"})
         test_parameters.append({"Display Line": self.display_line, "Unit": "dB"})
@@ -199,6 +221,10 @@ class TestHarmSpur(TestSupport):
         results_table_output_power.append({"Output Power (W)": self.dbm_to_watts(fund_power), "Unit": "W"})
         processed_data["results"].append({"Output power": results_table_output_power})
 
+        # if a screenshot was specified, insert it here
+        processed_data["screen_dumps"] = list()
+        if self.harm_screen_dump is True:
+            processed_data["screen_dumps"].append(measurement_data["screen_dumps"]["harmonics"])
 
         return processed_data
 

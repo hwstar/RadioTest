@@ -127,8 +127,8 @@ class Dsa815(Instrument):
         """Enable the built in preamp"""
         self.write(':SENS:POW:RF:GAIN ON')
 
-    def save_screendump(self, file):
-        """Save a .bmp screenshot to a file"""
+    def get_screendump(self):
+        """ Retrieve screen dump bmp bits """
         # Get cont mode
         contmode = self.ask(':INIT:CONT?')
         # Set cont mode off
@@ -141,6 +141,14 @@ class Dsa815(Instrument):
         data = res[11:]
         # Get size from header
         size = int(header[2:])
+        data = data[0:size]
+        return (size, data)
+
+
+    def save_screendump(self, file):
+        """Save a .bmp screenshot to a file"""
+        size, data = self.get_screendump()
+
         # Open the file to write the bitmap info into
         f = open(file, "wb")
         # Write the bitmap info into the file
