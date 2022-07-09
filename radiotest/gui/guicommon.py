@@ -1,13 +1,19 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+from PIL import Image, ImageTk
 from tkinter.messagebox import showerror
 import radiotest.config.config as config
 import radiotest.drivers.loader as loader
-
+import io
 
 class GuiCommon(ttk.Frame):
 
     def __init__(self, parent, **kwargs):
+        self.image_top = None
+        self.image_top_label = None
+        self.python_photo_image = None
+
+
         ttk.Frame.__init__(self, parent, **kwargs)
 
 
@@ -297,3 +303,25 @@ class GuiCommon(ttk.Frame):
             Nothing
         """
         pass
+
+
+    def show_image(self, image_info, format="bmp", directory="/tmp"):
+        """ Pops up a transient window and displays an in-memory BMP file
+        Parameters:
+            image_info(obj): In-memory image to display
+        Returns:
+            Nothing
+
+        """
+        def pressed():
+            pass
+
+
+        pil_image = Image.open(io.BytesIO(image_info["data"]))
+        self.image_top = tk.Toplevel(config.Root_obj)
+        self.image_top.title(image_info["name"])
+        self.python_photo_image = ImageTk.PhotoImage(pil_image)
+        self.image_top_label = tk.Label(self.image_top, image=self.python_photo_image)
+        self.image_top_label.grid(columnspan=3, column=0, row=0)
+        tk.Button(self.image_top, command=pressed, text="Save Image").grid(column=0, row=1)
+        self.image_top.transient(config.Root_obj)

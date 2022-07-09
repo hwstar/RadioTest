@@ -7,6 +7,9 @@ import radiotest.gui.guicommon as gc
 
 
 
+
+
+
 class Tab_IMD(gc.GuiCommon):
     def __init__(self, parent, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
@@ -137,6 +140,15 @@ class Tab_IMD(gc.GuiCommon):
         processed_data = self.test_function(test_setup)
         if processed_data is None:
             return
+        if parameters["imd_screenshot"] is True:
+            self.show_image(processed_data["screen_dumps"][0])
+
+
+
+
+
+
+
 
 
     def sa_clicked_callback(self):
