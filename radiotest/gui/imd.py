@@ -1,13 +1,9 @@
+import time as time
 import tkinter as tk
 import tkinter.ttk as ttk
 import radiotest.config.config as config
 import radiotest.config.configdata as configdata
 import radiotest.gui.guicommon as gc
-
-
-
-
-
 
 
 class Tab_IMD(gc.GuiCommon):
@@ -17,11 +13,12 @@ class Tab_IMD(gc.GuiCommon):
         self.test_function = None
         self.processed_data = None
         self.test_button_enable_state = 0
-
         # Registration of validation functions
         self.int_reg = self.register(self.validate_int)
         self.highest_harmonic_reg = self.register(self.validate_highest_harmonic)
         self.pos_float_reg = self.register(self.validate_pos_float)
+        self.string_reg = self.register(self.validate_string)
+
 
         row = 0
 
@@ -53,6 +50,21 @@ class Tab_IMD(gc.GuiCommon):
 
         # TEST PARAMETERS
 
+
+        # Test Project
+
+        self.imd_project_stringvar = tk.StringVar(self, "TestProject",
+                                              "imd_project_stringvar")
+        row += 1
+        self.label_entry(row, 0, "Project Name:", 20, self.imd_project_stringvar, self.string_reg)
+
+        # Test ID
+
+        self.imd_id_stringvar = tk.StringVar(self, 0,
+                                              "imd_id_stringvar")
+        row += 1
+        self.label_entry(row, 0, "Test ID:", 20, self.imd_id_stringvar, self.string_reg)
+
         # Ref Offset
         self.sa_ref_offset_intvar = tk.IntVar(self, config.IMD_defaults["ref_offset"],
                                               "sa_ref_offset_intvar")
@@ -62,16 +74,16 @@ class Tab_IMD(gc.GuiCommon):
         # Tone Level
 
         self.awg_tone_level_intvar = tk.IntVar(self, config.IMD_defaults["tone_level"],
-                                              "awg_tone_level_intvat")
+                                              "awg_tone_level_intvar")
         row += 1
         self.label_entry(row, 0, "Tone Level:", 4, self.awg_tone_level_intvar, self.int_reg, "dBm")
 
 
-        # Display Line
+        # Measurement Threshold
         self.sa_display_line_intvar = tk.IntVar(self, config.IMD_defaults["display_line"],
                                                 "sa_display_line_intvar")
         row += 1
-        self.label_entry(row, 0, "Measurement Threshold:", 4, self.sa_display_line_intvar, self.int_reg, "dBm")
+        self.label_entry(row, 0, "Measurement Threshold:", 4, self.sa_display_line_intvar, self.int_reg, "dB")
 
         # F1
         self.awg_f1_doublevar = tk.DoubleVar(self, config.IMD_defaults["f1"], "awg_f1_doublevar")
@@ -94,9 +106,9 @@ class Tab_IMD(gc.GuiCommon):
         self.cb_imd_screenshot_intvar = tk.IntVar(self, 0, "checkbox_imd_intvar")
         row += 1
         self.imd_ss_inst = tk.Checkbutton(self, text="Capture IMD screenshot",
-                                              onvalue=1,
-                                              variable=self.cb_imd_screenshot_intvar,
-                                              offvalue=0, height=2, width=30)
+                                          onvalue=1,
+                                          variable=self.cb_imd_screenshot_intvar,
+                                          offvalue=0, height=2, width=30)
         self.imd_ss_inst.grid(row=row, column=1, sticky=tk.W)
 
         # Test separator
@@ -128,6 +140,8 @@ class Tab_IMD(gc.GuiCommon):
         test_setup["instruments"] = instruments
 
         parameters = dict()
+        parameters["project_name"] = self.imd_project_stringvar.get()
+        parameters["test_id"] = self.imd_id_stringvar.get()
         parameters["ref_offset"] = self.sa_ref_offset_intvar.get()
         parameters["tone_level"] = self.awg_tone_level_intvar.get()
         parameters["display_line"] = self.sa_display_line_intvar.get()
@@ -140,15 +154,7 @@ class Tab_IMD(gc.GuiCommon):
         processed_data = self.test_function(test_setup)
         if processed_data is None:
             return
-        if parameters["imd_screenshot"] is True:
-            self.show_image(processed_data["screen_dumps"][0])
-
-
-
-
-
-
-
+        self.show_results(processed_data, "IMD Test Results")
 
 
     def sa_clicked_callback(self):
@@ -187,6 +193,7 @@ class Tab_IMD(gc.GuiCommon):
 
     def reset(self):
         """ Reset the tab to defaults"""
+        self.imd_id_stringvar.set(str(int(time.time())))
         self.reset_instrument_select(self.sa_instr_info, self.change_sa_selected_state, self.sa_int_var)
         self.reset_instrument_select(self.awg_instr_info, self.change_awg_selected_state, self.awg_int_var)
 

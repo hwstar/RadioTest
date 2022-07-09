@@ -19,6 +19,8 @@ class TestImd(TestSupport):
         self.gui = test_setup["gui_inst"]
         self.sa = test_setup["instruments"]["sa"]["driver_inst"]
         self.awg = test_setup["instruments"]["awg"]["driver_inst"]
+        self.project_name = test_setup["parameters"]["project_name"]
+        self.test_id = test_setup["parameters"]["test_id"]
         self.ref_offset = test_setup["parameters"]["ref_offset"]
         self.tone_level = test_setup["parameters"]["tone_level"]
         self.display_line = test_setup["parameters"]["display_line"]
@@ -111,8 +113,8 @@ class TestImd(TestSupport):
         test_metrics = list()
         now = datetime.now()
         run_time = str(now - self.start_time)
-        test_metrics.append({"Time stamp": self.get_timestamp(now), "Unit": None})
-        test_metrics.append({"Run time": run_time, "Unit": "Seconds"})
+        test_metrics.append({"Time stamp": self.get_timestamp(now)})
+        test_metrics.append({"Run time": run_time})
         processed_data["test_metrics"] = test_metrics
 
         # Test parameters
@@ -120,12 +122,14 @@ class TestImd(TestSupport):
         test_parameters = list()
         now = datetime.now()
         run_time = str(now - self.start_time)
-        test_parameters.append({"F1": self.f1, "Unit": "MHz"})
-        test_parameters.append({"F2": self.f2, "Unit": "MHz"})
+        test_parameters.append({"F1": self.f1/1E6, "Unit": "MHz"})
+        test_parameters.append({"F2": self.f2/1E6, "Unit": "MHz"})
+        test_parameters.append({"Project Name": self.project_name})
+        test_parameters.append({"Test ID": self.test_id})
         test_parameters.append({"Reference Offset": self.ref_offset,"Unit": "dB"})
-        test_parameters.append({"Display Line":self.display_line, "Unit": "dB"})
+        test_parameters.append({"Measurement Threshold":self.display_line, "Unit": "dB"})
         test_parameters.append({"Tone Level": self.tone_level, "Unit": "dBm"})
-        test_parameters.append({"Order": self.max_order, "Unit": None})
+        test_parameters.append({"Order": self.max_order})
 
 
 
@@ -166,22 +170,22 @@ class TestImd(TestSupport):
             left = self.sa_get_peak(result, freqs[0], 100)
 
             if left is not None:
-                results_table_products.append({"Order": order, 'Freq': freqs[0],
-                                      "Amplitude": -abs(carrier_power-left["amplitude"])})
+                results_table_products.append({"Order": order, 'Freq(MHz)': freqs[0]/1E6,
+                                               "Power": self.format_float_as_string(-abs(carrier_power-left["amplitude"]),2), "Unit": "dBc"})
 
             right = self.sa_get_peak(result, freqs[1], 100)
 
             if right is not None:
-                results_table_products.append({"Order": order, 'Freq': freqs[1],
-                                      "Amplitude": -abs(carrier_power - right["amplitude"])})
+                results_table_products.append({"Order": order, 'Freq(MHz)': freqs[1]/1E6,
+                                               "Power": self.format_float_as_string(-abs(carrier_power - right["amplitude"]),2), "Unit": "dBc"})
 
         processed_data["test_parameters"] = test_parameters
         processed_data["results"].append({"IMD Products List": results_table_products})
 
         # Place f1 and f2 peak power in the test results
         results_table_f1_f2 = list()
-        results_table_f1_f2.append({"F1 Output Power": f1_peak_power, "Unit": "dBm"})
-        results_table_f1_f2.append({"F2 Output Power": f2_peak_power, "Unit": "dBm"})
+        results_table_f1_f2.append({"Freq":"F1", "Output Power": self.format_float_as_string(f1_peak_power["amplitude"], 2), "Unit": "dBm"})
+        results_table_f1_f2.append({"Freq":"F2", "Output Power": self.format_float_as_string(f2_peak_power["amplitude"], 2), "Unit": "dBm"})
 
         processed_data["results"].append({"F1/F2 Output Power": results_table_f1_f2})
 

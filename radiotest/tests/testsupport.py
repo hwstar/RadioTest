@@ -10,6 +10,8 @@ class TestSupport:
         self.start_time = None
         self.tone_level = 0
         self.ref_offset = 0
+        self.project_name = 0
+        self.test_id = 0
         self.display_line = 0
         self.fundamental = 0
         self.f1 = 0
@@ -241,7 +243,16 @@ class TestSupport:
         pmw = self.dbm_to_milliwatts(dbm)
         return pmw / 1000.0
 
-
+    def format_float_as_string(self, value, precision):
+        """ Format a floating point number as a string with the supplied precision
+        Parameters:
+            value(float):   The value to convert to a string
+            precision(int): The number of digits to the right of the decimal point to include
+        Returns:
+            A string representing the number
+        """
+        f_string = "{value:." + str(precision) + "f}"
+        return f_string.format(value=value)
 
 
 

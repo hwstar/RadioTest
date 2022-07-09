@@ -1,3 +1,4 @@
+import time as time
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter.messagebox import showerror
@@ -13,12 +14,11 @@ class Tab_Harm_Spur(gc.GuiCommon):
         self.test_function = None
         self.processed_data = None
         self.equipment_bits = 2
-
         # Registration of validation functions
-
         self.int_reg = self.register(self.validate_int)
         self.highest_harmonic_reg = self.register(self.validate_highest_harmonic)
         self.pos_float_reg = self.register(self.validate_pos_float)
+        self.string_reg = self.register(self.validate_string)
 
         row = 0
 
@@ -62,17 +62,29 @@ class Tab_Harm_Spur(gc.GuiCommon):
 
         # *** Input fields ***
 
+        # Test Project
+        self.harm_project_stringvar = tk.StringVar(self, "TestProject",
+                                                  "imd_project_stringvar")
+        row += 1
+        self.label_entry(row, 0, "Project Name:", 20, self.harm_project_stringvar, self.string_reg)
+
+        # Test ID
+        self.harm_id_stringvar = tk.StringVar(self, "0",
+                                            "harm_id_stringvar")
+        row += 1
+        self.label_entry(row, 0, "Test ID:", 20, self.harm_id_stringvar, self.string_reg)
+
         # Ref Offset
         self.sa_ref_offset_intvar = tk.IntVar(self, config.Harm_spurs_defaults["ref_offset"],
                                               "sa_ref_offset_intvar")
         row += 1
         self.label_entry(row , 0, "Ref Offset:", 4, self.sa_ref_offset_intvar, self.int_reg, "dBm")
 
-        # Display Line
+        # Measurement Threshold
         self.sa_display_line_intvar = tk.IntVar(self, config.Harm_spurs_defaults["display_line"],
                                                 "sa_display_line_intvar")
         row += 1
-        self.label_entry(row, 0, "Measurement Threshold:", 4, self.sa_display_line_intvar, self.int_reg, "dBm")
+        self.label_entry(row, 0, "Measurement Threshold:", 4, self.sa_display_line_intvar, self.int_reg, "dB")
 
         # Fundamental Frequency
         self.sa_fundamental_doublevar = tk.DoubleVar(self, config.Harm_spurs_defaults["fundamental"],
@@ -136,6 +148,8 @@ class Tab_Harm_Spur(gc.GuiCommon):
             awg_dict["name"] = "Arbitrary Waveform Generator"
             instruments["awg"] = awg_dict
             parameters["tone_level"] = self.awg_tone_level_intvar.get()
+        parameters["project_name"] = self.harm_project_stringvar.get()
+        parameters["test_id"] = self.harm_id_stringvar.get()
         parameters["ref_offset"] = self.sa_ref_offset_intvar.get()
         parameters["display_line"] = self.sa_display_line_intvar.get()
         parameters["fundamental"] = self.sa_fundamental_doublevar.get()
@@ -200,6 +214,7 @@ class Tab_Harm_Spur(gc.GuiCommon):
 
     def reset(self):
         """ Reset the tab to defaults"""
+        self.harm_id_stringvar.set(str(int(time.time())))
         self.reset_instrument_select(self.sa_instr_info, self.test_button_enable_sa, self.sa_int_var)
         self.reset_instrument_select(self.awg_instr_info, self.test_button_enable_awg, self.awg_int_var)
         self.equipment_bits = 2

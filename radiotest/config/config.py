@@ -1,4 +1,8 @@
 
+
+# Default Path where test results are saved
+Default_test_results_path = "/home/srodgers/projects/test_results"
+
 # Harmonics and spurs defaults
 
 Harm_spurs_defaults = {"fundamental": 7.2, "awg_tone_level": -40,"ref_offset": 40, "highest_harmonic": 7, "display_line": -10}

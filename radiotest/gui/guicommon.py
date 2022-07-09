@@ -101,6 +101,24 @@ class GuiCommon(ttk.Frame):
         else:
             return True
 
+    def validate_string(self, action, index, value_if_allowed,
+                        prior_value, text, validation_type, trigger_type, widget_name):
+        """ Validate an integer field
+                Refer to: https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/entry-validation.html
+               Parameters:
+                   action(int):  Action code
+                   index(int): Insert or delete index
+                   value_if_allowed(str): Edited string value to validate
+                   prior_value(str): String value before the edit
+                   text(str): The text being inserted or deleted
+                   validation_type(str): The current value of the widget's validate option.
+                   trigger_type(str): the type of validation that triggered the callback
+                   widget_name(str): the tk name of the widget
+               Returns:
+                   True if the entry is to be accepted, false if it is to be rejected
+        """
+        return True
+
     def instrument_select(self, row, instr_filter, instr_text, rb_int_var, rb_sel_clicked_callback, enabled=True):
         """ Helper to select an instrument
 
@@ -270,16 +288,6 @@ class GuiCommon(ttk.Frame):
             unit_item.grid(row=row, column=column_start+2)
         return entry_item
 
-    def format_float_as_string(self, value, precision):
-        """ Format a floating point number as a string with the supplied precision
-        Parameters:
-            value(float):   The value to convert to a string
-            precision(int): The number of digits to the right of the decimal point to include
-        Returns:
-            A string representing the number
-        """
-        f_string = "{value:." + str(precision) + "f}"
-        return f_string.format(value)
 
     def show_error(self, title=None, message=None):
         """ Display an error popup. This gets called by the test code
@@ -295,25 +303,172 @@ class GuiCommon(ttk.Frame):
         tk.messagebox.showerror(title=title, message=message)
         return
 
-    def show_results(self, processed_data):
+    def show_results(self, processed_data, title="Test Results"):
         """ Show the results of a test
         Parameters:
             processed_data(obj)
         Returns:
             Nothing
         """
-        pass
+
+        def show_results_test_metrics(row_in):
+            """
+            This internal function handles displaying the test parameters
+            It is passed the starting row, and it returns the next row which can be used
+            """
+            metrics = processed_data["test_metrics"]
+            # Format test parameters
+            heading = tk.Label(self.results_top, width=30,
+                               text="Test Metrics", font="bold", anchor="w")
+            heading.grid(row=row_in, column=0)
+
+            row_in += 1
+            tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                     width=30, text="Metric", font="TkHeadingFont").grid(row=row_in, column=0, sticky=tk.NSEW)
+            tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                     width=30, text="Value", font="TkHeadingFont").grid(row=row_in, column=1, sticky=tk.NSEW)
+            tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                     width=30, text="Unit", font="TkHeadingFont").grid(row=row_in, column=2, sticky=tk.NSEW)
+
+            row_in += 1
+            for metric in metrics:
+                keys = list(metric.keys())
+                values = list(metric.values())
+
+                tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                         width=30, text=keys[0]).grid(row=row_in, column=0, sticky=tk.NSEW)
+                tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                         width=30, text=values[0]).grid(row=row_in, column=1, sticky=tk.NSEW)
+                unit = metric["Unit"] if "Unit" in keys else "-"
+                tk.Label(self.results_top, relief=tk.GROOVE, width=30, text=unit).grid(row=row_in, column=2,
+                                                                                       sticky=tk.NSEW)
+
+                row_in += 1
+            return row_in
+
+        def show_results_test_parameters(row_in):
+            """
+            This internal function handles displaying the test parameters
+            It is passed the starting row, and it returns the next row which can be used
+            """
+            parameters = processed_data["test_parameters"]
+
+            # Format test parameters
+            heading = tk.Label(self.results_top, width=30,
+                               text="Test Parameters", font="bold", anchor="w")
+            heading.grid(row=row_in, column=0)
+
+            row_in += 1
+            tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                     width=30, text="Parameter", font="TkHeadingFont").grid(row=row_in, column=0, sticky=tk.NSEW)
+            tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                     width=30, text="Value", font="TkHeadingFont").grid(row=row_in, column=1, sticky=tk.NSEW)
+            tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                     width=30, text="Unit", font="TkHeadingFont").grid(row=row_in, column=2, sticky=tk.NSEW)
+
+            row_in += 1
+            for parameter in parameters:
+                keys = list(parameter.keys())
+                values = list(parameter.values())
+
+                tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                         width=30, text=keys[0]).grid(row=row_in, sticky=tk.NSEW)
+                tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                         width=30, text=values[0]).grid(row=row_in, column=1, sticky=tk.NSEW)
+
+                unit = parameter["Unit"] if "Unit" in keys else "-"
+                tk.Label(self.results_top, relief=tk.GROOVE, width=30, text=unit).grid(row=row_in, column=2,
+                                                                                       sticky=tk.NSEW)
+                row_in += 1
+            return row_in
+
+        def show_results_info(row_in, results_set):
+            """
+            This internal function handles displaying the test parameters
+            It is passed the starting row, and it returns the next row which can be used
+            """
 
 
-    def show_image(self, image_info, format="bmp", directory="/tmp"):
+
+            results_header = list(results_set.keys())[0]
+
+            # Get the keys for the first row
+            # These will determine the number of colunms we will require
+            if len(results_set[results_header]) == 0:
+                self.show_error("No Data", "No data for {}".format(results_header))
+                return row
+            first_row = results_set[results_header][0]
+            keys_first_row = list(first_row.keys())
+            # The number of columns will equal the number of keys
+            columns = len(keys_first_row)
+
+            # Format test parameter heading
+            heading = tk.Label(self.results_top, width=30,
+                               text=results_header, font="bold", anchor="w")
+            heading.grid(row=row_in, column=0)
+
+            row_in += 1
+
+            # Format the table header
+            for column in range(0, columns):
+                table_header = tk.Label(self.results_top, width=30,
+                                        text=keys_first_row[column], font="TkHeadingFont",
+                                        relief=tk.GROOVE, justify=tk.LEFT)
+                table_header.grid(row=row_in, column=column)
+
+            row_in += 1
+
+            # Format the data
+            for row_info in results_set[results_header]:
+                row_info_values = list(row_info.values())
+                for column in range(0, columns):
+                    table_header = tk.Label(self.results_top, width=30,
+                                            text=row_info_values[column],
+                                            relief=tk.GROOVE, justify=tk.LEFT)
+                    table_header.grid(row=row_in, column=column)
+                row_in += 1
+
+            return row_in
+
+        self.results_top = tk.Toplevel(config.Root_obj)
+        self.results_top.title(title)
+
+        row = 0
+
+        # Show test metrics
+
+        row = show_results_test_metrics(row)
+
+        # Show test parameters
+
+        row = show_results_test_parameters(row)
+
+        # Show result sets
+
+        for result in processed_data["results"]:
+            row = show_results_info(row, result)
+
+        # Present window
+
+        self.results_top.transient(config.Root_obj)
+
+
+
+
+    def show_image(self, image_info, test_name="sometest", directory="/tmp", project_name="None", test_id="12345678"):
         """ Pops up a transient window and displays an in-memory BMP file
         Parameters:
             image_info(obj): In-memory image to display
+            test_name(str): Name of the test which identifies what was tested
+            directory(str): Path where test results are stored
+            project_name(str): A string identifying a project
+            test_id(str): A unique identifier for the test
         Returns:
             Nothing
 
         """
         def pressed():
+            save_path = directory+"/"+project_name+"/"+test_id+"/"+test_name+".bmp"
             pass
 
 

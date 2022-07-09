@@ -16,6 +16,8 @@ class TestHarmSpur(TestSupport):
         # Unpack and format the data passed in
         self.gui = test_setup["gui_inst"]
         self.sa = test_setup["instruments"]["sa"]["driver_inst"]
+        self.project_name = test_setup["parameters"]["project_name"]
+        self.test_id = test_setup["parameters"]["test_id"]
         self.ref_offset = test_setup["parameters"]["ref_offset"]
         self.display_line = test_setup["parameters"]["display_line"]
         self.fundamental = test_setup["parameters"]["fundamental"] * 1E6  # Convert to Hz
@@ -155,16 +157,18 @@ class TestHarmSpur(TestSupport):
         test_metrics = list()
         now = datetime.now()
         run_time = str(now - self.start_time)
-        test_metrics.append({"Time stamp": self.get_timestamp(now), "Unit": None})
-        test_metrics.append({"Run time": run_time, "Unit": "Seconds"})
+        test_metrics.append({"Time stamp": self.get_timestamp(now)})
+        test_metrics.append({"Run time": run_time})
         processed_data["test_metrics"] = test_metrics
 
         # Test parameters
         test_parameters = list()
-        test_parameters.append({"Fundamental Frequency": self.fundamental, "Unit": "MHz"})
+        test_parameters.append({"Fundamental Frequency": self.fundamental/1E6, "Unit": "MHz"})
+        test_parameters.append({"Project Name": self.project_name})
+        test_parameters.append({"Test ID": self.test_id})
         test_parameters.append({"Reference Offset": self.ref_offset, "Unit": "dB"})
-        test_parameters.append({"Display Line": self.display_line, "Unit": "dB"})
-        test_parameters.append({"Highest Harmonic": self.highest_harmonic, "Unit": None})
+        test_parameters.append({"Measurement Threshold": self.display_line, "Unit": "dB"})
+        test_parameters.append({"Highest Harmonic": self.highest_harmonic})
         use_awg = "YES" if self.use_awg is True else "NO"
         test_parameters.append({"Use AWG": use_awg})
         if self.use_awg is True:
@@ -190,14 +194,16 @@ class TestHarmSpur(TestSupport):
         i = 1
         for freq in close_in_spurs:
             if freq in measurement_data['spurs_500k']['freqs']:
-                index = measurement_data['spurs_500k']['freqs'].index(freq)
+                index = measurement_data['spurs_500k']['freqs'].index(freq/1E6)
                 results_table_spurs.append(
-                    {"Spur": i, "MHz": freq, "dBc":-abs(measurement_data['spurs_500k']['amplitudes'][index] - fund_power)})
+                    {"Spur": i, "MHz": freq,
+                    "Power": self.format_float_as_string(-abs(measurement_data['spurs_500k']['amplitudes'][index] - fund_power), 2), "Unit": "dBc"})
                 i += 1
             elif freq in measurement_data['spurs_2M']['freqs']:
-                index = measurement_data['spurs_2M']['freqs'].index(freq)
+                index = measurement_data['spurs_2M']['freqs'].index(freq/1E6)
                 results_table_spurs.append(
-                    {"Spur": i, "MHz": freq, "dBc": -abs(measurement_data['spurs_500k']['amplitudes'][index] - fund_power)})
+                    {"Spur": i, "MHz": freq,
+                    "Power": self.format_float_as_string(-abs(measurement_data['spurs_500k']['amplitudes'][index] - fund_power), 2), "Unit": "dBc"})
                 i += 1
         # Append legend and results table
 
@@ -211,14 +217,17 @@ class TestHarmSpur(TestSupport):
                     if freq in harmonic_table:
                         index = peaks["freqs"].index(freq)
                         amplitude = peaks["amplitudes"][index]
-                        info = {"Harmonic": harmonic_table.index(freq)+2, "MHz": freq, "dBc": -abs(amplitude - fund_power)}
+                        info = {"Harmonic": harmonic_table.index(freq)+2, "Freq(MHz)": freq/1E6,
+                                "Power": self.format_float_as_string(-abs(amplitude - fund_power), 2), "Unit": "dBc"}
                         results_table_harmonics.append(info)
         # Append legend and results table
         processed_data["results"].append({"Harmonics": results_table_harmonics})
 
         results_table_output_power = list()
-        results_table_output_power.append({"Output Power (dBm)": fund_power, "Unit": "dBm"})
-        results_table_output_power.append({"Output Power (W)": self.dbm_to_watts(fund_power), "Unit": "W"})
+        results_table_output_power.append({"Output Power (dBm)": self.format_float_as_string(fund_power, 2),
+                                           "Unit": "dBm"})
+        results_table_output_power.append({"Output Power (W)": self.format_float_as_string(self.dbm_to_watts(fund_power), 2),
+                                           "Unit": "W"})
         processed_data["results"].append({"Output power": results_table_output_power})
 
         # if a screenshot was specified, insert it here

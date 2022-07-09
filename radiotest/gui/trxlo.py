@@ -11,12 +11,10 @@ class Tab_TRX_LO(gc.GuiCommon):
         ttk.Frame.__init__(self, parent, **kwargs)
         self.parent = parent
         self.test_function = None
-
         # Registration of validation functions
-
         self.int_reg = self.register(self.validate_int)
+        self.highest_harmonic_reg = self.register(self.validate_highest_harmonic)
         self.pos_float_reg = self.register(self.validate_pos_float)
-
         row = 0
 
         # ARBITRARY WAVEFORM GENERATOR
