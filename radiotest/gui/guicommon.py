@@ -288,6 +288,58 @@ class GuiCommon(ttk.Frame):
             unit_item.grid(row=row, column=column_start+2)
         return entry_item
 
+    def number_listbox_create(self, row, label, start, end, default=None, step=1, height=4):
+        """
+        Create a list box
+
+        :param row: Row number to place list box on
+        :param label: Text label for listboc
+        :param start:  starting number
+        :param end:  ending number
+        :param default: default value to select
+        :param step: skip value between numbers
+        :param height: listbox height
+
+        :return:
+        data structure to be used to retrieve the selection
+        """
+        tk.Label(self, text="Highest Harmonic").grid(row=row, column=0)
+        widget = tk.Listbox(self, selectmode=tk.SINGLE, width=4, height=height)
+        widget.grid(row=row, column=1)
+        selection_map = list()
+        for index,list_number in enumerate(range(start, end + 1, step)):
+            ls = str(list_number)
+            widget.insert(index, ls)
+            selection_map.append(ls)
+
+        if default is not None:
+            if str(default) not in selection_map:
+                raise ValueError("Invalid default value")
+            else:
+                selindex = selection_map.index(str(default))
+                widget.select_set(selindex)
+
+        return {"widget": widget, "map": selection_map}
+
+
+
+
+    def number_listbox_get(self, item):
+        """
+        Get the list box item selected
+
+        :param item: data structure returned by number_listbox_create()
+        :return: integer representing the selected item, or None if an item was not selected
+        """
+        widget = item["widget"]
+        map = item["map"]
+        cs = widget.curselection()
+        if len(cs) == 0:
+            return None
+        index = cs[0]
+        res = int(map[index])
+        return res
+
 
     def show_error(self, title=None, message=None):
         """ Display an error popup. This gets called by the test code

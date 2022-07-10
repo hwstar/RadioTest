@@ -64,57 +64,57 @@ class Tab_Harm_Spur(gc.GuiCommon):
 
         # Test Project
         self.harm_project_stringvar = tk.StringVar(self, "TestProject",
-                                                  "imd_project_stringvar")
+                                                  "harmspur_project_stringvar")
         row += 1
         self.label_entry(row, 0, "Project Name:", 20, self.harm_project_stringvar, self.string_reg)
 
         # Test ID
         self.harm_id_stringvar = tk.StringVar(self, "0",
-                                            "harm_id_stringvar")
+                                            "harmspur_id_stringvar")
         row += 1
         self.label_entry(row, 0, "Test ID:", 20, self.harm_id_stringvar, self.string_reg)
 
         # Ref Offset
         self.sa_ref_offset_intvar = tk.IntVar(self, config.Harm_spurs_defaults["ref_offset"],
-                                              "sa_ref_offset_intvar")
+                                              "harmspur_ref_offset_intvar")
         row += 1
         self.label_entry(row , 0, "Ref Offset:", 4, self.sa_ref_offset_intvar, self.int_reg, "dBm")
 
         # Measurement Threshold
         self.sa_display_line_intvar = tk.IntVar(self, config.Harm_spurs_defaults["display_line"],
-                                                "sa_display_line_intvar")
+                                                "harmspur_display_line_intvar")
         row += 1
         self.label_entry(row, 0, "Measurement Threshold:", 4, self.sa_display_line_intvar, self.int_reg, "dB")
 
         # Fundamental Frequency
         self.sa_fundamental_doublevar = tk.DoubleVar(self, config.Harm_spurs_defaults["fundamental"],
-                                               "sa_fundamental_doublevar")
+                                               "harmspur_fundamental_doublevar")
         row += 1
         self.label_entry(row, 0, "Fundamental Frequency:", 8, self.sa_fundamental_doublevar,
                            self.pos_float_reg, "MHz")
-
-        # Highest Harmonic
-        self.sa_highest_harmonic_intvar = tk.IntVar(self, config.Harm_spurs_defaults["highest_harmonic"],
-                                                    "sa_highest_harmonic_intvar")
         row += 1
-        self.label_entry(row, 0, "Highest_Harmonic:", 4, self.sa_highest_harmonic_intvar,
-                           self.highest_harmonic_reg)
+
+        # Highest harmonic
+        self.harmonic_listbox = self.number_listbox_create(row, "Highest Harmonic:", 2, 11, default=7, height=10)
+        row += 1
+
 
         # Arbitrary Waveform Generator Tone Level
         self.awg_tone_level_intvar = tk.IntVar(self, config.Harm_spurs_defaults["awg_tone_level"],
-                                                    "awg_tone_level_intvar")
+                                                    "harmspur_tone_level_intvar")
         row += 1
         self.tone_level_entry_item = self.label_entry(row, 0, "AWG Tone Level:", 4, self.awg_tone_level_intvar,
                          self.int_reg, unit="dBm", enabled=False)
 
         # Harmonics screenshot
-        self.cb_harm_ss_intvar = tk.IntVar(self, 0, "checkbox_harm_intvar")
+        self.cb_harm_ss_intvar = tk.IntVar(self, 0, "harmspur_checkbox_intvar")
         row += 1
         self.harm_ss_inst = tk.Checkbutton(self, text="Capture Harmonics screenshot",
                                               onvalue=1,
                                               variable=self.cb_harm_ss_intvar,
                                               offvalue=0, height=2, width=30)
         self.harm_ss_inst.grid(row=row, column=1, sticky=tk.W)
+
 
         # Test separator
         row += 1
@@ -141,6 +141,11 @@ class Tab_Harm_Spur(gc.GuiCommon):
         instruments = {"sa": sa_dict}
         test_setup["instruments"] = instruments
         parameters = dict()
+        x = self.number_listbox_get(self.harmonic_listbox)
+        if x is None:
+            self.show_error("Entry Error", "Highest Harmonic not specified")
+            return
+        parameters["highest_harmonic"] = x
         parameters["use_awg"] = True if self.cb_awg_intvar.get() == 1 else False
         if parameters["use_awg"] is True:
             awg_dict = dict()
@@ -153,7 +158,6 @@ class Tab_Harm_Spur(gc.GuiCommon):
         parameters["ref_offset"] = self.sa_ref_offset_intvar.get()
         parameters["display_line"] = self.sa_display_line_intvar.get()
         parameters["fundamental"] = self.sa_fundamental_doublevar.get()
-        parameters["highest_harmonic"] = self.sa_highest_harmonic_intvar.get()
         parameters["harm_screenshot"] = True if self.cb_harm_ss_intvar.get() == 1 else False
         test_setup["parameters"] = parameters
         test_setup["gui_inst"] = self

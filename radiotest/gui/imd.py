@@ -67,40 +67,40 @@ class Tab_IMD(gc.GuiCommon):
 
         # Ref Offset
         self.sa_ref_offset_intvar = tk.IntVar(self, config.IMD_defaults["ref_offset"],
-                                              "sa_ref_offset_intvar")
+                                              "imd_ref_offset_intvar")
         row += 1
         self.label_entry(row, 0, "Ref Offset:", 4, self.sa_ref_offset_intvar, self.int_reg, "dBm")
 
         # Tone Level
 
         self.awg_tone_level_intvar = tk.IntVar(self, config.IMD_defaults["tone_level"],
-                                              "awg_tone_level_intvar")
+                                              "imd_tone_level_intvar")
         row += 1
         self.label_entry(row, 0, "Tone Level:", 4, self.awg_tone_level_intvar, self.int_reg, "dBm")
 
 
         # Measurement Threshold
         self.sa_display_line_intvar = tk.IntVar(self, config.IMD_defaults["display_line"],
-                                                "sa_display_line_intvar")
+                                                "imd_display_line_intvar")
         row += 1
         self.label_entry(row, 0, "Measurement Threshold:", 4, self.sa_display_line_intvar, self.int_reg, "dB")
 
         # F1
-        self.awg_f1_doublevar = tk.DoubleVar(self, config.IMD_defaults["f1"], "awg_f1_doublevar")
+        self.awg_f1_doublevar = tk.DoubleVar(self, config.IMD_defaults["f1"], "imd_f1_doublevar")
         row += 1
         self.label_entry(row, 0, "F1:", 8, self.awg_f1_doublevar,
                            self.pos_float_reg, "MHz")
         # F2
-        self.awg_f2_doublevar = tk.DoubleVar(self, config.IMD_defaults["f2"], "awg_f2_doublevar")
+        self.awg_f2_doublevar = tk.DoubleVar(self, config.IMD_defaults["f2"], "imd_f2_doublevar")
         row += 1
         self.label_entry(row, 0, "F2:", 8, self.awg_f2_doublevar,
                            self.pos_float_reg, "MHz")
 
-        # Maximum order
-        self.max_order_intvar = tk.IntVar(self, config.IMD_defaults["max_order"], "imd_max_order")
+
+       # Maximum order
         row += 1
-        self.label_entry(row, 0, "Max Order:", 2, self.max_order_intvar,
-                           self.pos_float_reg)
+        self.imd_listbox = self.number_listbox_create(row, "Max Order:", 3, 9, step=2, default=7, height=4)
+
 
         # IMD screenshot
         self.cb_imd_screenshot_intvar = tk.IntVar(self, 0, "checkbox_imd_intvar")
@@ -140,6 +140,11 @@ class Tab_IMD(gc.GuiCommon):
         test_setup["instruments"] = instruments
 
         parameters = dict()
+        x = self.number_listbox_get(self.imd_listbox)
+        if x is None:
+            self.show_error("Entry Error", "Max order not specified")
+            return
+        parameters["max_order"] = x
         parameters["project_name"] = self.imd_project_stringvar.get()
         parameters["test_id"] = self.imd_id_stringvar.get()
         parameters["ref_offset"] = self.sa_ref_offset_intvar.get()
@@ -147,7 +152,6 @@ class Tab_IMD(gc.GuiCommon):
         parameters["display_line"] = self.sa_display_line_intvar.get()
         parameters["f1"] = self.awg_f1_doublevar.get()
         parameters["f2"] = self.awg_f2_doublevar.get()
-        parameters["max_order"] = self.max_order_intvar.get()
         parameters["imd_screenshot"] = True if self.cb_imd_screenshot_intvar.get() == 1 else False
         test_setup["parameters"] = parameters
         test_setup["gui_inst"] = self

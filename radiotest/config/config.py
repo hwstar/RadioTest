@@ -8,7 +8,7 @@ Default_test_results_path = "/home/srodgers/projects/test_results"
 Harm_spurs_defaults = {"fundamental": 7.2, "awg_tone_level": -40,"ref_offset": 40, "highest_harmonic": 7, "display_line": -10}
 
 # IMD Defaults
-IMD_defaults = {"ref_offset": 40, "tone_level": -4, "display_line": -10, "f1": 7.2, "f2": 7.2011, "max_order": 5}
+IMD_defaults = {"ref_offset": 40, "tone_level": -4, "display_line": -10, "f1": 7.2, "f2": 7.2011, "max_order": 7}
 
 # TRX LO Defaults
 TRXLO_defaults = {"if_carr_freq": 12.288, "lo_level": 10,
