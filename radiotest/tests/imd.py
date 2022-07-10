@@ -179,6 +179,12 @@ class TestImd(TestSupport):
                 results_table_products.append({"Order": order, 'Freq(MHz)': freqs[1]/1E6,
                                                "Power": self.format_float_as_string(-abs(carrier_power - right["amplitude"]),2), "Unit": "dBc"})
 
+
+        if len(results_table_products) == 0:
+            self.gui.show_error("No Data", "No IMD products were seen. Check your test setup and test parameters")
+            return None
+
+
         processed_data["test_parameters"] = test_parameters
         processed_data["results"].append({"IMD Products List": results_table_products})
 
