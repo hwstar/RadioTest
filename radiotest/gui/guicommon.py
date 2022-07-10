@@ -394,9 +394,6 @@ class GuiCommon(ttk.Frame):
 
             # Get the keys for the first row
             # These will determine the number of colunms we will require
-            if len(results_set[results_header]) == 0:
-                self.show_error("No Data", "No data for {}".format(results_header))
-                return row
             first_row = results_set[results_header][0]
             keys_first_row = list(first_row.keys())
             # The number of columns will equal the number of keys
@@ -405,7 +402,7 @@ class GuiCommon(ttk.Frame):
             # Format test parameter heading
             heading = tk.Label(self.results_top, width=30,
                                text=results_header, font="bold", anchor="w")
-            heading.grid(row=row_in, column=0)
+            heading.grid(row=row_in, column=0,sticky=tk.NSEW)
 
             row_in += 1
 
@@ -414,7 +411,7 @@ class GuiCommon(ttk.Frame):
                 table_header = tk.Label(self.results_top, width=30,
                                         text=keys_first_row[column], font="TkHeadingFont",
                                         relief=tk.GROOVE, justify=tk.LEFT)
-                table_header.grid(row=row_in, column=column)
+                table_header.grid(row=row_in, column=column, sticky=tk.NSEW)
 
             row_in += 1
 
@@ -425,7 +422,7 @@ class GuiCommon(ttk.Frame):
                     table_header = tk.Label(self.results_top, width=30,
                                             text=row_info_values[column],
                                             relief=tk.GROOVE, justify=tk.LEFT)
-                    table_header.grid(row=row_in, column=column)
+                    table_header.grid(row=row_in, column=column, sticky=tk.NSEW)
                 row_in += 1
 
             return row_in
