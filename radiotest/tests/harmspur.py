@@ -163,6 +163,7 @@ class TestHarmSpur(TestSupport):
 
         # Test parameters
         test_parameters = list()
+        test_parameters.append({"Test Name": test_setup["parameters"]["test_name"]})
         test_parameters.append({"Fundamental Frequency": self.fundamental/1E6, "Unit": "MHz"})
         test_parameters.append({"Project Name": self.project_name})
         test_parameters.append({"Test ID": self.test_id})

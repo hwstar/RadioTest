@@ -144,6 +144,7 @@ class Tab_IMD(gc.GuiCommon):
         if x is None:
             self.show_error("Entry Error", "Max order not specified")
             return
+        parameters["test_name"] = "Intermodulation Distortion"
         parameters["max_order"] = x
         parameters["project_name"] = self.imd_project_stringvar.get()
         parameters["test_id"] = self.imd_id_stringvar.get()
@@ -155,6 +156,7 @@ class Tab_IMD(gc.GuiCommon):
         parameters["imd_screenshot"] = True if self.cb_imd_screenshot_intvar.get() == 1 else False
         test_setup["parameters"] = parameters
         test_setup["gui_inst"] = self
+
         processed_data = self.test_function(test_setup)
         if processed_data is None:
             return

@@ -1,10 +1,13 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+import io
+import csv
+from pathlib import Path
 from PIL import Image, ImageTk
-from tkinter.messagebox import showerror
+from tkinter.messagebox import showerror, askyesno
+from tkinter.filedialog import asksaveasfile
 import radiotest.config.config as config
 import radiotest.drivers.loader as loader
-import io
 
 class GuiCommon(ttk.Frame):
 
@@ -340,6 +343,76 @@ class GuiCommon(ttk.Frame):
         res = int(map[index])
         return res
 
+    def save_results_to_csv(self, the_file, processed_data):
+        """
+        Save the test results to a .csv file
+        :param the_file:  The path and file to save the results to
+        :param processed_data:  The test results
+        :return:
+        Nothing
+        """
+        def write_row(csv_writer, section, info):
+            """
+
+            :param csv_writer: Writer object
+            :param section: Section name
+            :param info: Information to write
+            :return:
+            Nothing
+            """
+            fields = list()
+            for key, value in info.items():
+                fields.append(key)
+                fields.append(str(value))
+            row = [section] + fields
+            csv_writer.writerow(row)
+
+        def write_row_results(csv_writer, section, results):
+            """
+            Write multiple rows for each test result
+            :param csv_writer:  Writer object
+            :param section:  Section name
+            :param results:  Results information
+            :return:
+            Nothing
+            """
+            description = list(results.keys())[0]
+
+            results_info = results[description]
+            for res in results_info:
+                fields = list()
+                fields.append(section)
+                fields.append(description)
+                for key, value in res.items():
+                    fields.append(key)
+                    fields.append(str(value))
+                csv_writer.writerow(fields)
+
+        # Create the file
+        with open(the_file, "w", newline='') as csv_file:
+            writer = csv.writer(csv_file, delimiter=",")
+
+            # Write test metrics
+            for metric in processed_data["test_metrics"]:
+                write_row(writer, "Test Metrics", metric)
+            # Write the test equipment
+            for instrument in processed_data["test_equipment"]:
+                write_row(writer, "Test Equipment", instrument)
+            # Test parameters
+            for parameter in processed_data["test_parameters"]:
+                write_row(writer, "Test Parameters", parameter)
+            # Test results
+            for result in processed_data["results"]:
+                write_row_results(writer, "Test Results", result)
+
+
+
+
+
+
+
+
+
 
     def show_error(self, title=None, message=None):
         """ Display an error popup. This gets called by the test code
@@ -434,6 +507,47 @@ class GuiCommon(ttk.Frame):
                 row_in += 1
             return row_in
 
+        def show_equipment(row_in):
+            """
+            This internal function handles displaying the test parameters
+            It is passed the starting row, and it returns the next row which can be used
+            """
+            instruments = processed_data["test_equipment"]
+            # Format test parameters
+            heading = tk.Label(self.results_top, width=30,
+                               text="Test Equipment", font="bold", anchor="w")
+            heading.grid(row=row_in, column=0)
+
+            row_in += 1
+            tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                     width=30, text="Type", font="TkHeadingFont").grid(row=row_in, column=0, sticky=tk.NSEW)
+            tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                     width=30, text="Make", font="TkHeadingFont").grid(row=row_in, column=1, sticky=tk.NSEW)
+            tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                     width=30, text="Model", font="TkHeadingFont").grid(row=row_in, column=2, sticky=tk.NSEW)
+            tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                     width=30, text="Serial", font="TkHeadingFont").grid(row=row_in, column=3, sticky=tk.NSEW)
+            tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                     width=30, text="Firmware", font="TkHeadingFont").grid(row=row_in, column=4, sticky=tk.NSEW)
+
+            row_in += 1
+            for instrument in instruments:
+                values = list(instrument.values())
+
+                tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                         width=30, text=values[0]).grid(row=row_in, column=0, sticky=tk.NSEW)
+                tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                         width=30, text=values[1]).grid(row=row_in, column=1, sticky=tk.NSEW)
+                tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                         width=30, text=values[2]).grid(row=row_in, column=2, sticky=tk.NSEW)
+                tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                         width=30, text=values[3]).grid(row=row_in, column=3, sticky=tk.NSEW)
+                tk.Label(self.results_top, relief=tk.GROOVE, justify=tk.LEFT,
+                         width=30, text=values[4]).grid(row=row_in, column=4, sticky=tk.NSEW)
+                row_in += 1
+            return row_in
+
+
         def show_results_info(row_in, results_set):
             """
             This internal function handles displaying the test parameters
@@ -479,6 +593,58 @@ class GuiCommon(ttk.Frame):
 
             return row_in
 
+        def test_parameter_search(key):
+            """
+            Returns the test parameter value for the key specified
+            :param key:
+            :return:
+            The value
+            """
+            for parameter in processed_data["test_parameters"]:
+                keys = list(parameter.keys())
+                if keys[0] == key:
+                    res = list(parameter.values())[0]
+                    return res
+            raise KeyError("No Key found in test parameter search")
+
+        # Save to CSV callback
+        def save_to_csv():
+            """
+            Saves the test data to acsv file
+            :return:
+            Nothing
+            """
+
+
+            # Generate path to file
+
+
+            directory = config.Default_test_results_path+"/" + \
+                test_parameter_search("Project Name") + \
+                "/"+test_parameter_search("Test Name")
+
+            file = test_parameter_search("Test ID")
+
+            # Make directory if it doesn't exist
+            # Ask first
+
+            path = Path(directory)
+            if not path.exists():
+                if(askyesno("Directory", "Create Directory: {}?".format(directory))):
+                    path.mkdir(parents=True)
+
+
+            filepath = tk.filedialog.asksaveasfilename(parent=self.results_top,
+                                 title="Save Test Results",
+                                 initialdir=directory,
+                                 initialfile=file,
+                                 defaultextension=".csv")
+
+            self.save_results_to_csv(filepath, processed_data)
+
+
+
+
         self.results_top = tk.Toplevel(config.Root_obj)
         self.results_top.title(title)
 
@@ -487,6 +653,10 @@ class GuiCommon(ttk.Frame):
         # Show test metrics
 
         row = show_results_test_metrics(row)
+
+        # Show test equipment
+
+        row = show_equipment(row)
 
         # Show test parameters
 
@@ -497,11 +667,29 @@ class GuiCommon(ttk.Frame):
         for result in processed_data["results"]:
             row = show_results_info(row, result)
 
+        # Show results separator
+
+        row += 1
+        results_sep = ttk.Separator(self.results_top, orient=tk.HORIZONTAL)
+        results_sep.grid(row=row, column=0, columnspan=10, sticky='ew')
+
+        # Show data disposition
+        row += 1
+        heading = tk.Label(self.results_top, width=30,
+                           text="Data Disposition", font="bold", anchor="w")
+        heading.grid(row=row, column=0)
+
+        # Show Save Data to csv button
+        row += 1
+        save_data_b = tk.Button(self.results_top, text="Save Data to .csv", command=save_to_csv)
+        save_data_b.grid(row=row, column=0, sticky="NSEW")
+
+        # Show Screen dump buttons if screendumps were taken
+
+
         # Present window
 
         self.results_top.transient(config.Root_obj)
-
-
 
 
     def show_image(self, image_info, test_name="sometest", directory="/tmp", project_name="None", test_id="12345678"):

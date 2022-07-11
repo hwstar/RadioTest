@@ -122,6 +122,7 @@ class TestImd(TestSupport):
         test_parameters = list()
         now = datetime.now()
         run_time = str(now - self.start_time)
+        test_parameters.append({"Test Name": test_setup["parameters"]["test_name"]})
         test_parameters.append({"F1": self.f1/1E6, "Unit": "MHz"})
         test_parameters.append({"F2": self.f2/1E6, "Unit": "MHz"})
         test_parameters.append({"Project Name": self.project_name})
@@ -130,7 +131,7 @@ class TestImd(TestSupport):
         test_parameters.append({"Measurement Threshold":self.display_line, "Unit": "dB"})
         test_parameters.append({"Tone Level": self.tone_level, "Unit": "dBm"})
         test_parameters.append({"Order": self.max_order})
-
+        processed_data["test_parameters"] = test_parameters
 
 
         # Test equipment
@@ -185,7 +186,10 @@ class TestImd(TestSupport):
             return None
 
 
-        processed_data["test_parameters"] = test_parameters
+
+
+        test_parameters = {"Test Name": test_setup["parameters"]["test_name"]}
+
         processed_data["results"].append({"IMD Products List": results_table_products})
 
         # Place f1 and f2 peak power in the test results

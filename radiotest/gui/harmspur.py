@@ -153,6 +153,7 @@ class Tab_Harm_Spur(gc.GuiCommon):
             awg_dict["name"] = "Arbitrary Waveform Generator"
             instruments["awg"] = awg_dict
             parameters["tone_level"] = self.awg_tone_level_intvar.get()
+        parameters["test_name"] = "Harmonics and Spurs"
         parameters["project_name"] = self.harm_project_stringvar.get()
         parameters["test_id"] = self.harm_id_stringvar.get()
         parameters["ref_offset"] = self.sa_ref_offset_intvar.get()
