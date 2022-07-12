@@ -306,7 +306,7 @@ class GuiCommon(ttk.Frame):
         :return:
         data structure to be used to retrieve the selection
         """
-        tk.Label(self, text="Highest Harmonic").grid(row=row, column=0)
+        tk.Label(self, text=label).grid(row=row, column=0)
         widget = tk.Listbox(self, selectmode=tk.SINGLE, width=4, height=height)
         widget.grid(row=row, column=1)
         selection_map = list()
@@ -323,6 +323,28 @@ class GuiCommon(ttk.Frame):
                 widget.select_set(selindex)
 
         return {"widget": widget, "map": selection_map}
+
+    def numbered_radiobuttons_create(self, row, label, intvar, start, end, default=None, step=1):
+        """
+        Create a list box
+
+        :param row: Row number to place list box on
+        :param label: Text label for listboc
+        :param start:  starting number
+        :param end:  ending number
+        :param default: default value to select
+        :param step: skip value between numbers
+
+
+        :return:
+        Nothing
+        """
+        tk.Label(self, text=label).grid(row=row, column=0)
+
+        for i,b in enumerate(range(start, end+1, step)):
+            rb = tk.Radiobutton(self, text=str(b), variable=intvar, value=b)
+            rb.grid(row=row, column=i+1)
+
 
 
 

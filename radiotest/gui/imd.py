@@ -99,7 +99,10 @@ class Tab_IMD(gc.GuiCommon):
 
        # Maximum order
         row += 1
-        self.imd_listbox = self.number_listbox_create(row, "Max Order:", 3, 9, step=2, default=7, height=4)
+        self.imd_max_order_intvar = tk.IntVar(self, 7, "imd_max_order_intvar")
+        self.imd_radiobuttons = self.numbered_radiobuttons_create(row, "Max_order",
+                                                                  self.imd_max_order_intvar, 3, 9, step=2, default=7)
+
 
 
         # IMD screenshot
@@ -140,12 +143,14 @@ class Tab_IMD(gc.GuiCommon):
         test_setup["instruments"] = instruments
 
         parameters = dict()
-        x = self.number_listbox_get(self.imd_listbox)
+        parameters["test_name"] = "Intermodulation Distortion"
+
+        x = self.imd_max_order_intvar.get()
         if x is None:
             self.show_error("Entry Error", "Max order not specified")
             return
-        parameters["test_name"] = "Intermodulation Distortion"
         parameters["max_order"] = x
+
         parameters["project_name"] = self.imd_project_stringvar.get()
         parameters["test_id"] = self.imd_id_stringvar.get()
         parameters["ref_offset"] = self.sa_ref_offset_intvar.get()
