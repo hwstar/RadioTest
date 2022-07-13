@@ -2,7 +2,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import io
 import csv
-from pathlib import Path
+import pathlib
 from PIL import Image, ImageTk
 from tkinter.messagebox import showerror, askyesno
 from tkinter.filedialog import asksaveasfile
@@ -455,17 +455,16 @@ class GuiCommon(ttk.Frame):
                 return res
         raise KeyError("No Key found in test_parameter_search()")
 
-    def build_file_save_path(self, dir_top, test_parameters):
+    def build_file_save_path(self, path_obj, test_parameters):
         """
-        :param dir_top: The leftmost part of the directory path
+        :param path_obj: A pathlib object containing leftmost part of the directory path
         :param test_parameters: The test parameters
         :return: A string with the complete directory name
         """
+        pd = path_obj / self.test_parameter_search("Project Name", test_parameters) / \
+             self.test_parameter_search("Test Name", test_parameters)
 
-        directory = dir_top + "/" + \
-                    self.test_parameter_search("Project Name", test_parameters) + \
-                    "/" + self.test_parameter_search("Test Name", test_parameters)
-        return directory
+        return pd
 
 
 
@@ -643,10 +642,14 @@ class GuiCommon(ttk.Frame):
             Nothing
             """
 
+            # Expand path (posix)
+            pp = pathlib.Path(config.Default_test_results_path)
+            pp = pp.expanduser()
+
 
             # Generate path to file
 
-            directory = self.build_file_save_path(config.Default_test_results_path, processed_data["test_parameters"])
+            directory = str(self.build_file_save_path(pp, processed_data["test_parameters"]))
 
             # Generate file name
 
@@ -654,9 +657,9 @@ class GuiCommon(ttk.Frame):
 
             # Make directory if it doesn't exist
             # Ask first
-            path = Path(directory)
+            path = pathlib.Path(directory)
             if not path.exists():
-                if(askyesno("Directory", "Create Directory: {}?".format(directory))):
+                if(askyesno("Directory does not exist", "Create Directory: {}?".format(directory))):
                     path.mkdir(parents=True)
 
             #
@@ -674,10 +677,48 @@ class GuiCommon(ttk.Frame):
             #
             self.save_results_to_csv(filepath, processed_data)
 
-        def present_image(dump):
+        def present_image(image_data):
+            """
+            Present image to user and give them the opportunity to save the image as a file
+            :param image_data: Data to show on screen
+            :return: Nothing
+            """
 
             def pressed():
-                pass
+                """
+                This gets called when the user presses the save image file button
+                :return: Nothing
+                """
+                # Expand path (posix)
+                pp = pathlib.Path(config.Default_test_results_path)
+                pp = pp.expanduser()
+
+                # Get the path and file name
+                directory = str(self.build_file_save_path(pp, processed_data["test_parameters"]))
+                file = self.test_parameter_search("Test ID", processed_data["test_parameters"])
+                # Make directory if it doesn't exist
+                # Ask first
+                path = pathlib.Path(directory)
+                if not path.exists():
+                    if (askyesno("Directory does not exist", "Create Directory: {}?".format(directory))):
+                        path.mkdir(parents=True)
+
+                #
+                # Allow the user to change the path
+                #
+
+                filepath = tk.filedialog.asksaveasfilename(parent=self.results_top,
+                                                           title="Save Test Results",
+                                                           initialdir=directory,
+                                                           initialfile=file,
+                                                           defaultextension=".bmp")
+
+                #
+                # Save the image to a file
+                #
+                with open(filepath, "wb") as image_file:
+                    image_file.write(dump["data"])
+
 
             pil_image = Image.open(io.BytesIO(dump["data"]))
             self.image_top = tk.Toplevel(config.Root_obj)
@@ -688,7 +729,6 @@ class GuiCommon(ttk.Frame):
             tk.Button(self.image_top, command=pressed, text="Save Image").grid(column=0, row=1)
             self.image_top.transient(config.Root_obj)
 
-            pass
 
 
         self.results_top = tk.Toplevel(config.Root_obj)

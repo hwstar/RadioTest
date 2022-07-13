@@ -1,7 +1,7 @@
 
 
 # Default Path where test results are saved
-Default_test_results_path = "/home/srodgers/projects/test_results"
+Default_test_results_path = "~/projects/test_results"
 
 # Harmonics and spurs defaults
 
