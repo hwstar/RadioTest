@@ -427,15 +427,6 @@ class GuiCommon(ttk.Frame):
             for result in processed_data["results"]:
                 write_row_results(writer, "Test Results", result)
 
-
-
-
-
-
-
-
-
-
     def show_error(self, title=None, message=None):
         """ Display an error popup. This gets called by the test code
         Parameters:
@@ -449,6 +440,34 @@ class GuiCommon(ttk.Frame):
             return
         tk.messagebox.showerror(title=title, message=message)
         return
+
+    def test_parameter_search(self, key, test_parameters):
+        """
+
+        :param key: The search key
+        :param test_parameters: The test parameters to search
+        :return: The test parameter value
+        """
+        for parameter in test_parameters:
+            keys = list(parameter.keys())
+            if keys[0] == key:
+                res = list(parameter.values())[0]
+                return res
+        raise KeyError("No Key found in test_parameter_search()")
+
+    def build_file_save_path(self, dir_top, test_parameters):
+        """
+        :param dir_top: The leftmost part of the directory path
+        :param test_parameters: The test parameters
+        :return: A string with the complete directory name
+        """
+
+        directory = dir_top + "/" + \
+                    self.test_parameter_search("Project Name", test_parameters) + \
+                    "/" + self.test_parameter_search("Test Name", test_parameters)
+        return directory
+
+
 
     def show_results(self, processed_data, title="Test Results"):
         """ Show the results of a test
@@ -615,19 +634,6 @@ class GuiCommon(ttk.Frame):
 
             return row_in
 
-        def test_parameter_search(key):
-            """
-            Returns the test parameter value for the key specified
-            :param key:
-            :return:
-            The value
-            """
-            for parameter in processed_data["test_parameters"]:
-                keys = list(parameter.keys())
-                if keys[0] == key:
-                    res = list(parameter.values())[0]
-                    return res
-            raise KeyError("No Key found in test parameter search")
 
         # Save to CSV callback
         def save_to_csv():
@@ -640,21 +646,22 @@ class GuiCommon(ttk.Frame):
 
             # Generate path to file
 
+            directory = self.build_file_save_path(config.Default_test_results_path, processed_data["test_parameters"])
 
-            directory = config.Default_test_results_path+"/" + \
-                test_parameter_search("Project Name") + \
-                "/"+test_parameter_search("Test Name")
+            # Generate file name
 
-            file = test_parameter_search("Test ID")
+            file = self.test_parameter_search("Test ID", processed_data["test_parameters"])
 
             # Make directory if it doesn't exist
             # Ask first
-
             path = Path(directory)
             if not path.exists():
                 if(askyesno("Directory", "Create Directory: {}?".format(directory))):
                     path.mkdir(parents=True)
 
+            #
+            # Allow the user to change the path
+            #
 
             filepath = tk.filedialog.asksaveasfilename(parent=self.results_top,
                                  title="Save Test Results",
@@ -662,9 +669,26 @@ class GuiCommon(ttk.Frame):
                                  initialfile=file,
                                  defaultextension=".csv")
 
+            #
+            # Save to CSV file
+            #
             self.save_results_to_csv(filepath, processed_data)
 
+        def present_image(dump):
 
+            def pressed():
+                pass
+
+            pil_image = Image.open(io.BytesIO(dump["data"]))
+            self.image_top = tk.Toplevel(config.Root_obj)
+            self.image_top.title(dump["name"])
+            self.python_photo_image = ImageTk.PhotoImage(pil_image)
+            self.image_top_label = tk.Label(self.image_top, image=self.python_photo_image)
+            self.image_top_label.grid(columnspan=3, column=0, row=0)
+            tk.Button(self.image_top, command=pressed, text="Save Image").grid(column=0, row=1)
+            self.image_top.transient(config.Root_obj)
+
+            pass
 
 
         self.results_top = tk.Toplevel(config.Root_obj)
@@ -703,39 +727,17 @@ class GuiCommon(ttk.Frame):
 
         # Show Save Data to csv button
         row += 1
+        column = 0
         save_data_b = tk.Button(self.results_top, text="Save Data to .csv", command=save_to_csv)
-        save_data_b.grid(row=row, column=0, sticky="NSEW")
+        save_data_b.grid(row=row, column=column, sticky="NSEW")
 
-        # Show Screen dump buttons if screendumps were taken
+        # Show Screen dump buttons if screen dumps were taken
+        column += 1
+        for dump in processed_data["screen_dumps"]:
 
+            button = tk.Button(self.results_top,text=dump["name"], command=lambda: present_image(dump))
+            button.grid(row=row, column=column, sticky="NSEW")
 
         # Present window
 
         self.results_top.transient(config.Root_obj)
-
-
-    def show_image(self, image_info, test_name="sometest", directory="/tmp", project_name="None", test_id="12345678"):
-        """ Pops up a transient window and displays an in-memory BMP file
-        Parameters:
-            image_info(obj): In-memory image to display
-            test_name(str): Name of the test which identifies what was tested
-            directory(str): Path where test results are stored
-            project_name(str): A string identifying a project
-            test_id(str): A unique identifier for the test
-        Returns:
-            Nothing
-
-        """
-        def pressed():
-            save_path = directory+"/"+project_name+"/"+test_id+"/"+test_name+".bmp"
-            pass
-
-
-        pil_image = Image.open(io.BytesIO(image_info["data"]))
-        self.image_top = tk.Toplevel(config.Root_obj)
-        self.image_top.title(image_info["name"])
-        self.python_photo_image = ImageTk.PhotoImage(pil_image)
-        self.image_top_label = tk.Label(self.image_top, image=self.python_photo_image)
-        self.image_top_label.grid(columnspan=3, column=0, row=0)
-        tk.Button(self.image_top, command=pressed, text="Save Image").grid(column=0, row=1)
-        self.image_top.transient(config.Root_obj)
