@@ -9,6 +9,7 @@ from tkinter.filedialog import asksaveasfile
 import radiotest.config.config as config
 import radiotest.drivers.loader as loader
 
+
 class GuiCommon(ttk.Frame):
 
     def __init__(self, parent, **kwargs):
@@ -18,7 +19,6 @@ class GuiCommon(ttk.Frame):
 
 
         ttk.Frame.__init__(self, parent, **kwargs)
-
 
     def validate_pos_float(self, action, index, value_if_allowed,
                            prior_value, text, validation_type, trigger_type, widget_name):
@@ -344,9 +344,6 @@ class GuiCommon(ttk.Frame):
         for i,b in enumerate(range(start, end+1, step)):
             rb = tk.Radiobutton(self, text=str(b), variable=intvar, value=b)
             rb.grid(row=row, column=i+1)
-
-
-
 
 
     def number_listbox_get(self, item):
