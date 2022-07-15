@@ -94,10 +94,13 @@ class Tab_Harm_Spur(gc.GuiCommon):
                            self.pos_float_reg, "MHz")
         row += 1
 
-        # Highest harmonic
-        self.harmonic_listbox = self.number_listbox_create(row, "Highest Harmonic:", 2, 11, default=7, height=10)
+        # Highest Harmonic
         row += 1
-
+        self.harm_highest_harmonic_intvar = tk.IntVar(self, 7, "harm_highest_harmonic_intvar")
+        self.imd_radiobuttons = self.numbered_radiobuttons_create(row, "Highest Harmonic",
+                                                                  self.harm_highest_harmonic_intvar, 5, 15,
+                                                                  step=2,
+                                                                  default=config.Harm_spurs_defaults["highest_harmonic"])
 
         # Arbitrary Waveform Generator Tone Level
         self.awg_tone_level_intvar = tk.IntVar(self, config.Harm_spurs_defaults["awg_tone_level"],
@@ -141,7 +144,7 @@ class Tab_Harm_Spur(gc.GuiCommon):
         instruments = {"sa": sa_dict}
         test_setup["instruments"] = instruments
         parameters = dict()
-        x = self.number_listbox_get(self.harmonic_listbox)
+        x = self.harm_highest_harmonic_intvar.get()
         if x is None:
             self.show_error("Entry Error", "Highest Harmonic not specified")
             return
@@ -162,9 +165,10 @@ class Tab_Harm_Spur(gc.GuiCommon):
         parameters["harm_screenshot"] = True if self.cb_harm_ss_intvar.get() == 1 else False
         test_setup["parameters"] = parameters
         test_setup["gui_inst"] = self
-        self.processed_data = self.test_function(test_setup)
-        if self.processed_data is None:
+        processed_data = self.test_function(test_setup)
+        if processed_data is None:
             return
+        self.show_results(processed_data, "Harmonics Test Results")
 
     def act_on_awg_checkbutton(self):
         """ Enable or disable the AWG instrument select radio buttons"""

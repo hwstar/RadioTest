@@ -56,7 +56,7 @@ class TestHarmSpur(TestSupport):
         # *** Test for close-in spurs @+/-250 kHz  which might not have been filtered out by the TRX bandpass filter ***
 
         measurement_data = dict()
-        measurement_data["screen_dumps"] = dict()
+        screen_dumps = list()
 
         measurement_data["spurs_500k"] = self.sa_make_measurement(self.fundamental, span=5E5, rbw=1000, vbw=1000,
                                                           ref_offset=self.ref_offset, display_line= self.display_line)
@@ -85,16 +85,16 @@ class TestHarmSpur(TestSupport):
                                                                           ))
 
         # If requested, get a complete screen shot of all the harmonics
+
         screen_dump_name = "Harmonics Screen Dump" if self.harm_screen_dump is True else None
         if screen_dump_name is not None:
-            measurement_data["screen_dumps"]["harmonics"] = (self.sa_make_measurement(center_freq_hz,
-                                                                                     span=span_all_hz, rbw=10000,
-                                                                                     vbw=10000,
-                                                                                     ref_offset=self.ref_offset,
-                                                                                     display_line=self.display_line,
-                                                                                     screen_dump_name=screen_dump_name
-                                                                                     ))
-
+            meas_data = self.sa_make_measurement(center_freq_hz,span=span_all_hz, rbw=10000,
+                                     vbw=10000,
+                                     ref_offset=self.ref_offset,
+                                     display_line=self.display_line,
+                                     screen_dump_name=screen_dump_name
+                                     )
+            screen_dumps.append(meas_data['screen_dump'])
 
         # Uncomment for debug
         #measurement_data['spurs_500k']['freqs'].append(6.123456)
@@ -151,6 +151,7 @@ class TestHarmSpur(TestSupport):
 
         # Create top level dict
         processed_data = dict()
+        processed_data["screen_dumps"] = screen_dumps
 
 
         # Test metrics
@@ -230,11 +231,6 @@ class TestHarmSpur(TestSupport):
         results_table_output_power.append({"Output Power (W)": self.format_float_as_string(self.dbm_to_watts(fund_power), 2),
                                            "Unit": "W"})
         processed_data["results"].append({"Output power": results_table_output_power})
-
-        # if a screenshot was specified, insert it here
-        processed_data["screen_dumps"] = list()
-        if self.harm_screen_dump is True:
-            processed_data["screen_dumps"].append(measurement_data["screen_dumps"]["harmonics"])
 
         return processed_data
 

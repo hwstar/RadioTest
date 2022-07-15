@@ -590,24 +590,33 @@ class GuiCommon(ttk.Frame):
             This internal function handles displaying the test parameters
             It is passed the starting row, and it returns the next row which can be used
             """
-
-
-
             results_header = list(results_set.keys())[0]
+
+            heading = tk.Label(self.results_top, width=30,
+                               text=results_header, font="bold", anchor="w")
+            heading.grid(row=row_in, column=0, sticky=tk.NSEW)
+
+            row_in += 1
+
+            # Check for no data condition
+            if len(list(results_set.values())[0]) == 0:
+                no_data = tk.Label(self.results_top, width=30,
+                                        text="No Data", font="TkHeadingFont",
+                                        relief=tk.GROOVE, justify=tk.LEFT)
+                no_data.grid(row=row_in, column=0, sticky=tk.NSEW)
+                row_in += 1
+                return row_in
 
             # Get the keys for the first row
             # These will determine the number of colunms we will require
+
             first_row = results_set[results_header][0]
             keys_first_row = list(first_row.keys())
             # The number of columns will equal the number of keys
             columns = len(keys_first_row)
 
             # Format test parameter heading
-            heading = tk.Label(self.results_top, width=30,
-                               text=results_header, font="bold", anchor="w")
-            heading.grid(row=row_in, column=0,sticky=tk.NSEW)
 
-            row_in += 1
 
             # Format the table header
             for column in range(0, columns):
