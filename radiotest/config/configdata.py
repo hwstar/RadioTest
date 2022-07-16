@@ -2,6 +2,7 @@ import configparser
 
 CD_FILT_AWG = "AWG"
 CD_FILT_SA = "SA"
+CD_FILT_AV = "AV"
 
 class ConfigData():
     def __init__(self, config_file):
@@ -10,7 +11,9 @@ class ConfigData():
             {"name": "AWG1","cd_filter": CD_FILT_AWG, "instrument": {"i_type": "Arbitrary Waveform Generator", "driver": "sdg1032x",
              "class_name":"Sdg1032x", "interface": "vxi", "hostname": "SDG-1032X"}},
             {"name": "SA1", "cd_filter": CD_FILT_SA, "instrument": {"i_type": "Spectrum Analyzer", "driver": "dsa815",
-             "class_name": "Dsa815", "interface": "vxi", "hostname": "DSA-815"}}
+             "class_name": "Dsa815", "interface": "vxi", "hostname": "DSA-815"}},
+            {"name": "AV", "cd_filter": CD_FILT_AV, "instrument": {"i_type": "Totalphase Aardvark", "driver": "aardvark",
+             "class_name": "Aardvark", "interface": "unspecified"}}
         ]
 
     def get_instruments_of_type(self, cd_filter):
