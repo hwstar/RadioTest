@@ -152,6 +152,8 @@ class Aardvark:
             res = apy.aa_gpio_set(handle, device_info["pin_state"])
             if res < 0:
                 self._apy_error(res)
+        else:
+            raise rte.DriverError("Feature not implemented")
 
 
     def gpio_set_direction(self, device_info, pin, direction):

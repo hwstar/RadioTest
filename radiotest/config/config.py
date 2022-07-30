@@ -12,7 +12,7 @@ IMD_defaults = {"ref_offset": 40, "tone_level": -4, "display_line": -10, "f1": 7
 
 # TRX LO Defaults
 TRXLO_defaults = {"if_carr_freq": 12.288, "lo_level": 10,
-                  "operating_freq": 7.2, "lo_swap": 0, "usb": 0, "ptt": 0 }
+                  "operating_freq": 7.2, "lo_swap": 0, "usb": 0, "ptt": 0, "aardvark": 0}
 
 # *** Global objects ***
 # These are initialized in radiotest.py

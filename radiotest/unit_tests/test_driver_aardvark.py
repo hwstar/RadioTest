@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 import importlib
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -33,7 +34,6 @@ instance.gpio_set_output(devices[0], "SS", True)
 
 instance.close_all()
 
-pass
 
 
 
