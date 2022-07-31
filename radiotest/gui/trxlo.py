@@ -125,6 +125,10 @@ class Tab_TRX_LO(gc.GuiCommon):
                                               variable=self.trxlo_ptt_intvar, height=2, width=4, state=tk.DISABLED)
         self.ptt_button_inst.grid(row=row, column=0, sticky=tk.W)
 
+        self.aardvark_ptt_pin = tk.Label(self, width=20, text="(Aardvark pin 9)", anchor="w")
+        self.aardvark_ptt_pin.grid(row=row, column=1, sticky=tk.W)
+
+
         # Test separator
         row += 1
         self.test_sep = ttk.Separator(self, orient=tk.HORIZONTAL)
@@ -141,7 +145,6 @@ class Tab_TRX_LO(gc.GuiCommon):
             try:
                 self.av_dict = config.Loader_obj.load("AV")
                 device_list = self.av_dict["instance"].get_available_devices()
-                print(device_list)
                 self.aardvark_serial = device_list[0]["serial"]
                 self.use_aardvark_serial.configure(text=self.aardvark_serial)
 

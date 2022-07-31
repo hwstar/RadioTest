@@ -38,7 +38,7 @@ class Aardvark:
 
     def _pin_check(self, pin):
         """
-        Checks to see that the device info dict has a valid aardvark handle
+        Checks to see that pin is a valid aardvark pin
         :param pin:  Pin name to check
         :return:  Pin mask bit
         """
@@ -182,6 +182,7 @@ class Aardvark:
         """
         Set the state of an output pin
         :param device_info: Device info for device with desired output pin
+        :param pin: Pin name string (One of "SCL", "SDA", "MISO", "SCLK", "MOSI", or "SS")
         :param state:  Pin state: True = High, False = Low
         :return: Nothing
         """
