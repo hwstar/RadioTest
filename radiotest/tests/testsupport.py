@@ -6,7 +6,6 @@ class TestSupport:
         self.gui = None
         self.sa = None
         self.awg = None
-
         self.start_time = None
         self.tone_level = 0
         self.ref_offset = 0
@@ -28,8 +27,11 @@ class TestSupport:
         self.ptt = False
         self.use_awg = False
         self.harm_screen_dump = False
-
         self.imd_screen_dump = False
+        self.av_dict = None
+        self.av_inst = None
+        self.av_device = None
+        self.tune = None
 
     def sa_make_measurement(self, center_freq, span=100E6, rbw=1000, vbw=1000,
                             ref_offset=40, display_line=10, screen_dump_name=None):

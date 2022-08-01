@@ -7,11 +7,6 @@ class TestTRXLO(TestSupport):
         super().__init__()
         self.trxlo_gui = config.App_obj.tabs.tab_frames["trxlo"]
         self.trxlo_gui.register_test_function(self.run)
-        self.av_dict = None
-        self.av_inst = None
-        self.av_device = None
-
-
 
 
     def run(self, test_setup):
@@ -25,6 +20,7 @@ class TestTRXLO(TestSupport):
         self.usb = test_setup["parameters"]["usb"]
         self.lo_swap = test_setup["parameters"]["lo_swap"]
         self.ptt = test_setup["parameters"]["ptt"]
+        self.tune = test_setup["parameters"]["tune"]
 
         # If we are using the aardvark, and it was not opened previously, set it up.
         if self.av_inst is None:
@@ -37,11 +33,16 @@ class TestTRXLO(TestSupport):
                 # Set GPIO mode
                 self.av_inst.configure(self.av_device, device_mode="GPIO_ONLY")
                 # Set the pin direction
-                self.av_inst.gpio_set_direction(self.av_device, "SCLK", "OUTPUT")  # SCLK-> PTT
+                self.av_inst.gpio_set_direction(self.av_device, "SCLK", "OUTPUT")  # SS-> PTT
+                self.av_inst.gpio_set_direction(self.av_device, "MOSI", "OUTPUT")  # MOSI-> TUNE
+                self.av_inst.gpio_set_direction(self.av_device, "MISO", "OUTPUT")  # MISO-> MUTE
 
         if self.av_device:
             # Set the pin state
             self.av_inst.gpio_set_output(self.av_device, "SCLK", self.ptt)
+            self.av_inst.gpio_set_output(self.av_device, "MISO", self.ptt)
+            tune_val = True  if self.ptt and self.tune else False
+            self.av_inst.gpio_set_output(self.av_device, "MOSI", tune_val)
 
         # Calculate
 
@@ -68,10 +69,5 @@ class TestTRXLO(TestSupport):
         self.awg.sine(channel=2, freq=output_b_freq, amplitude=lo_vpp, offset=0.0, phase=0.0)
         self.awg.output_on(1)
         self.awg.output_on(2)
-
-        # Set the GPIO lines if the aardvark is present
-
-
-
 
         return None

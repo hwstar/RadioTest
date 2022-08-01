@@ -125,8 +125,20 @@ class Tab_TRX_LO(gc.GuiCommon):
                                               variable=self.trxlo_ptt_intvar, height=2, width=4, state=tk.DISABLED)
         self.ptt_button_inst.grid(row=row, column=0, sticky=tk.W)
 
-        self.aardvark_ptt_pin = tk.Label(self, width=20, text="(Aardvark pin 9)", anchor="w")
+        self.aardvark_ptt_pin = tk.Label(self, width=20, text="(Aardvark pins 7,5)", anchor="w")
         self.aardvark_ptt_pin.grid(row=row, column=1, sticky=tk.W)
+
+        # Tune
+
+        self.trxlo_tune_intvar = tk.IntVar(self, config.TRXLO_defaults["tune"],
+                                          "trxlo_tune_intvar")
+        row += 1
+        self.tune_button_inst = tk.Checkbutton(self, text="TUNE", onvalue=1, offvalue=0,
+                                              variable=self.trxlo_tune_intvar, height=2, width=4, state=tk.DISABLED)
+        self.tune_button_inst.grid(row=row, column=0, sticky=tk.W)
+
+        self.aardvark_tune_pin = tk.Label(self, width=20, text="(Aardvark pin 8)", anchor="w")
+        self.aardvark_tune_pin.grid(row=row, column=1, sticky=tk.W)
 
 
         # Test separator
@@ -154,13 +166,12 @@ class Tab_TRX_LO(gc.GuiCommon):
                                 "Check to see the aardvark device is plugged in and not in use by another program")
 
                 return
-
-
             state = tk.NORMAL
         else:
             self.use_aardvark_serial.configure(text="N/A")
             state = tk.DISABLED
         self.ptt_button_inst.configure(state=state)
+        self.tune_button_inst.configure(state=state)
 
     def register_test_function(self, test_function):
         """ Register test function: Called by the test constructor"""
@@ -190,6 +201,7 @@ class Tab_TRX_LO(gc.GuiCommon):
         if self.aardvark_serial:
             parameters["aardvark_sn"] = self.aardvark_serial
         parameters["ptt"] = True if self.trxlo_ptt_intvar.get() == 1 else False
+        parameters["tune"] = True if self.trxlo_tune_intvar.get() == 1 else False
         test_setup["parameters"] = parameters
         test_setup["gui_inst"] = self
         self.test_function(test_setup)
