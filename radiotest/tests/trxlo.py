@@ -45,9 +45,11 @@ class TestTRXLO(TestSupport):
             self.av_inst.gpio_set_output(self.av_device, "MOSI", tune_val)
 
         # Calculate
-
-        injection_frequency = (self.operating_freq + self.if_carr_freq) \
-            if self.usb is True else (self.if_carr_freq - self.operating_freq)
+        # If in LSB mode, we need to ensure the low side injection frequency is always positive
+        diff_freq = self.if_carr_freq - self.operating_freq if self.if_carr_freq > self.operating_freq else \
+            self.operating_freq - self.if_carr_freq
+        injection_frequency = (self.operating_freq + self.if_carr_freq)\
+            if self.usb is True else diff_freq
 
         if self.ptt is True:
             if self.lo_swap is True:
